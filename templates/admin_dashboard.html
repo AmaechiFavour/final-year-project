@@ -1,0 +1,483 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - E-Learning Portal{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <!-- Top Header Bar -->
+    <div class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+                    <p class="text-sm text-gray-500 mt-1">Platform overview and management</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="{{ url_for('register') }}" class="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                        Add User
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Stats Cards - Peerup Style with Growth -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <!-- Total Students -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md hover:border-blue-100 transition-all">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path></svg>
+                    </div>
+                    {% if student_growth > 0 %}
+                    <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">+{{ student_growth }}%</span>
+                    {% elif student_growth < 0 %}
+                    <span class="text-xs font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded-full">{{ student_growth }}%</span>
+                    {% endif %}
+                </div>
+                <p class="text-2xl font-bold text-gray-900">{{ total_students }}</p>
+                <p class="text-xs text-gray-500 mt-1">Total Students</p>
+            </div>
+
+            <!-- Total Teachers -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md hover:border-green-100 transition-all">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                    </div>
+                    {% if teacher_growth > 0 %}
+                    <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">+{{ teacher_growth }}%</span>
+                    {% elif teacher_growth < 0 %}
+                    <span class="text-xs font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded-full">{{ teacher_growth }}%</span>
+                    {% endif %}
+                </div>
+                <p class="text-2xl font-bold text-gray-900">{{ total_teachers }}</p>
+                <p class="text-xs text-gray-500 mt-1">Total Teachers</p>
+            </div>
+
+            <!-- Total Courses -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md hover:border-purple-100 transition-all">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20"><path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3z"></path></svg>
+                    </div>
+                    <span class="text-xs text-gray-500">{{ new_courses_this_week }} new</span>
+                </div>
+                <p class="text-2xl font-bold text-gray-900">{{ total_courses }}</p>
+                <p class="text-xs text-gray-500 mt-1">Total Courses</p>
+            </div>
+
+            <!-- Total Enrollments -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md hover:border-amber-100 transition-all">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                    </div>
+                    <span class="text-xs text-gray-500">{{ new_enrollments_this_week }} new</span>
+                </div>
+                <p class="text-2xl font-bold text-gray-900">{{ total_enrollments }}</p>
+                <p class="text-xs text-gray-500 mt-1">Total Enrollments</p>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Left Column (2/3) -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- Recent Teachers - Like Peerup Pending Tutors -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-lg font-bold text-gray-900">Recent Teachers</h2>
+                            {% if new_teachers_this_week > 0 %}
+                            <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">{{ new_teachers_this_week }} new this week</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if recent_teachers %}
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-gray-100">
+                                    <th class="text-left py-3 px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Teacher</th>
+                                    <th class="text-left py-3 px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
+                                    <th class="text-center py-3 px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Courses</th>
+                                    <th class="text-center py-3 px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Students</th>
+                                    <th class="text-left py-3 px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Joined</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for teacher in recent_teachers %}
+                                <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition">
+                                    <td class="py-3 px-2">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                                <span class="text-xs font-bold text-green-600">{{ teacher.first_name[:1] }}{{ teacher.last_name[:1] }}</span>
+                                            </div>
+                                            <span class="text-sm font-medium text-gray-900">{{ teacher.first_name }} {{ teacher.last_name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 px-2 text-sm text-gray-500">{{ teacher.email }}</td>
+                                    <td class="py-3 px-2 text-sm text-gray-700 text-center font-semibold">{{ teacher.courses_count }}</td>
+                                    <td class="py-3 px-2 text-sm text-gray-700 text-center font-semibold">{{ teacher.student_count }}</td>
+                                    <td class="py-3 px-2 text-sm text-gray-500">{{ teacher.date_joined.strftime('%b %d, %Y') if teacher.date_joined else 'N/A' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-6">
+                        <p class="text-gray-500 text-sm">No teachers registered yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Recent Students - Like Peerup Registered Students -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-lg font-bold text-gray-900">Recent Students</h2>
+                            {% if new_students_this_week > 0 %}
+                            <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full">{{ new_students_this_week }} new this week</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if recent_students %}
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-gray-100">
+                                    <th class="text-left py-3 px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Student</th>
+                                    <th class="text-left py-3 px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
+                                    <th class="text-center py-3 px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Enrolled</th>
+                                    <th class="text-center py-3 px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Completed</th>
+                                    <th class="text-left py-3 px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Joined</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in recent_students %}
+                                <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition">
+                                    <td class="py-3 px-2">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                                <span class="text-xs font-bold text-blue-600">{{ student.first_name[:1] }}{{ student.last_name[:1] }}</span>
+                                            </div>
+                                            <span class="text-sm font-medium text-gray-900">{{ student.first_name }} {{ student.last_name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 px-2 text-sm text-gray-500">{{ student.email }}</td>
+                                    <td class="py-3 px-2 text-sm text-gray-700 text-center font-semibold">{{ student.enrollment_count }}</td>
+                                    <td class="py-3 px-2 text-sm text-gray-700 text-center font-semibold">{{ student.completed_courses }}</td>
+                                    <td class="py-3 px-2 text-sm text-gray-500">{{ student.date_joined.strftime('%b %d, %Y') if student.date_joined else 'N/A' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-6">
+                        <p class="text-gray-500 text-sm">No students registered yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right Column (1/3) -->
+            <div class="space-y-6">
+                <!-- Platform Stats - Like Peerup Quick Stats -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Platform Stats</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                </div>
+                                <span class="text-sm text-gray-600">Total Users</span>
+                            </div>
+                            <span class="font-bold text-gray-900">{{ total_users }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path></svg>
+                                </div>
+                                <span class="text-sm text-gray-600">Quiz Attempts</span>
+                            </div>
+                            <span class="font-bold text-gray-900">{{ total_quiz_attempts }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                </div>
+                                <span class="text-sm text-gray-600">Lessons Completed</span>
+                            </div>
+                            <span class="font-bold text-gray-900">{{ total_lessons_completed }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-amber-600" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                                </div>
+                                <span class="text-sm text-gray-600">Avg Course Rating</span>
+                            </div>
+                            <span class="font-bold text-gray-900">{{ avg_course_rating }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- This Week Summary -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">This Week</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3 bg-blue-50 rounded-lg p-3">
+                            <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white text-sm font-bold">{{ new_students_this_week }}</div>
+                            <span class="text-sm text-gray-700">New Students</span>
+                        </div>
+                        <div class="flex items-center gap-3 bg-green-50 rounded-lg p-3">
+                            <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center text-white text-sm font-bold">{{ new_teachers_this_week }}</div>
+                            <span class="text-sm text-gray-700">New Teachers</span>
+                        </div>
+                        <div class="flex items-center gap-3 bg-purple-50 rounded-lg p-3">
+                            <div class="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center text-white text-sm font-bold">{{ new_courses_this_week }}</div>
+                            <span class="text-sm text-gray-700">New Courses</span>
+                        </div>
+                        <div class="flex items-center gap-3 bg-amber-50 rounded-lg p-3">
+                            <div class="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-white text-sm font-bold">{{ new_enrollments_this_week }}</div>
+                            <span class="text-sm text-gray-700">New Enrollments</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Registrations -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Recent Registrations</h3>
+                    {% if recent_registrations %}
+                    <div class="space-y-3">
+                        {% for reg in recent_registrations %}
+                        <div class="flex items-center gap-3 py-2">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
+                                {% if reg.account == 'student' %}bg-blue-100{% elif reg.account == 'teacher' %}bg-green-100{% else %}bg-purple-100{% endif %}">
+                                <span class="text-xs font-bold {% if reg.account == 'student' %}text-blue-600{% elif reg.account == 'teacher' %}text-green-600{% else %}text-purple-600{% endif %}">{{ reg.first_name[:1] }}</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900 truncate">{{ reg.first_name }} {{ reg.last_name }}</p>
+                                <p class="text-xs text-gray-500">{{ reg.account|title }} &middot; {{ reg.date_joined.strftime('%b %d') if reg.date_joined else '' }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-gray-500 text-sm text-center py-4">No recent registrations</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Management Tabs -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="border-b border-gray-200">
+                <div class="flex flex-wrap">
+                    <button onclick="showTab('users')" class="tab-btn active px-6 py-4 text-sm font-medium text-gray-900 border-b-2 border-blue-600 hover:text-blue-600">
+                        Users Management
+                    </button>
+                    <button onclick="showTab('courses')" class="tab-btn px-6 py-4 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:text-gray-900 hover:border-gray-300">
+                        Courses Management
+                    </button>
+                    <button onclick="showTab('reports')" class="tab-btn px-6 py-4 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:text-gray-900 hover:border-gray-300">
+                        Reports
+                    </button>
+                </div>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="users-tab" class="tab-content p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-gray-900">All Users</h3>
+                    <span class="text-xs text-gray-500">{{ total_users }} total</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-100">
+                                <th class="text-left py-3 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
+                                <th class="text-left py-3 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
+                                <th class="text-left py-3 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th>
+                                <th class="text-left py-3 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="text-left py-3 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Login</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in all_users %}
+                            <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition">
+                                <td class="py-3 px-3">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-8 h-8 rounded-full flex items-center justify-center
+                                            {% if u.account == 'student' %}bg-blue-100{% elif u.account == 'teacher' %}bg-green-100{% else %}bg-purple-100{% endif %}">
+                                            <span class="text-xs font-bold {% if u.account == 'student' %}text-blue-600{% elif u.account == 'teacher' %}text-green-600{% else %}text-purple-600{% endif %}">{{ u.first_name[:1] }}{{ u.last_name[:1] }}</span>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-900">{{ u.first_name }} {{ u.last_name }}</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-3 text-sm text-gray-500">{{ u.email }}</td>
+                                <td class="py-3 px-3">
+                                    <span class="px-2 py-0.5 rounded-full text-xs font-medium
+                                        {% if u.account == 'student' %}bg-blue-100 text-blue-700{% elif u.account == 'teacher' %}bg-green-100 text-green-700{% else %}bg-purple-100 text-purple-700{% endif %}">
+                                        {{ u.account|title }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3">
+                                    <span class="inline-flex items-center gap-1 text-xs font-medium {{ 'text-green-600' if u.is_active else 'text-gray-400' }}">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ 'bg-green-500' if u.is_active else 'bg-gray-300' }}"></span>
+                                        {{ 'Active' if u.is_active else 'Inactive' }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3 text-xs text-gray-500">{{ u.last_login or 'Never' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Courses Tab -->
+            <div id="courses-tab" class="tab-content hidden p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-gray-900">All Courses</h3>
+                    <span class="text-xs text-gray-500">{{ total_courses }} total</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-100">
+                                <th class="text-left py-3 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Course</th>
+                                <th class="text-left py-3 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Instructor</th>
+                                <th class="text-center py-3 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Students</th>
+                                <th class="text-center py-3 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="text-right py-3 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for course in all_courses %}
+                            <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition">
+                                <td class="py-3 px-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+                                            <span class="text-white text-sm font-bold">{{ course.title[:1] }}</span>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900">{{ course.title }}</p>
+                                            <p class="text-xs text-gray-500">{{ course.lessons|length }} lessons</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-3 text-sm text-gray-600">{{ course.instructor.first_name if course.instructor else 'Unknown' }} {{ course.instructor.last_name if course.instructor else '' }}</td>
+                                <td class="py-3 px-3 text-sm text-gray-700 text-center font-semibold">{{ course.enrollments|length }}</td>
+                                <td class="py-3 px-3 text-center">
+                                    <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ 'bg-green-100 text-green-700' if course.is_published else 'bg-gray-100 text-gray-600' }}">
+                                        {{ 'Published' if course.is_published else 'Draft' }}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="{{ url_for('view_course', course_id=course.id) }}" class="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded-lg hover:bg-blue-200 transition font-medium">View</a>
+                                        <button onclick="if(confirm('Archive this course?')) window.location='{{ url_for('delete_course', course_id=course.id) }}'" class="text-xs bg-red-100 text-red-600 px-3 py-1 rounded-lg hover:bg-red-200 transition font-medium">Archive</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div id="reports-tab" class="tab-content hidden p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-6">Platform Reports</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-blue-50 rounded-xl p-6 border border-blue-100">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900">User Distribution</h4>
+                                <p class="text-xs text-gray-600">{{ total_users }} total users</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-600">Students</span>
+                                    <span class="font-semibold text-gray-900">{{ total_students }}</span>
+                                </div>
+                                <div class="w-full bg-blue-200 rounded-full h-2">
+                                    <div class="bg-blue-600 h-2 rounded-full" style="width: {{ (total_students / total_users * 100) if total_users > 0 else 0 }}%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-600">Teachers</span>
+                                    <span class="font-semibold text-gray-900">{{ total_teachers }}</span>
+                                </div>
+                                <div class="w-full bg-green-200 rounded-full h-2">
+                                    <div class="bg-green-600 h-2 rounded-full" style="width: {{ (total_teachers / total_users * 100) if total_users > 0 else 0 }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-green-50 rounded-xl p-6 border border-green-100">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3z" clip-rule="evenodd"></path></svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900">Engagement</h4>
+                                <p class="text-xs text-gray-600">Activity metrics</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between py-2 border-b border-green-200">
+                                <span class="text-sm text-gray-600">Total Enrollments</span>
+                                <span class="font-bold text-gray-900">{{ total_enrollments }}</span>
+                            </div>
+                            <div class="flex items-center justify-between py-2 border-b border-green-200">
+                                <span class="text-sm text-gray-600">Quiz Attempts</span>
+                                <span class="font-bold text-gray-900">{{ total_quiz_attempts }}</span>
+                            </div>
+                            <div class="flex items-center justify-between py-2 border-b border-green-200">
+                                <span class="text-sm text-gray-600">Lessons Completed</span>
+                                <span class="font-bold text-gray-900">{{ total_lessons_completed }}</span>
+                            </div>
+                            <div class="flex items-center justify-between py-2">
+                                <span class="text-sm text-gray-600">Avg Course Rating</span>
+                                <span class="font-bold text-gray-900">{{ avg_course_rating }}/5</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('border-blue-600', 'text-gray-900');
+        btn.classList.add('border-transparent', 'text-gray-600');
+    });
+    document.getElementById(tabName + '-tab').classList.remove('hidden');
+    event.target.classList.remove('border-transparent', 'text-gray-600');
+    event.target.classList.add('border-blue-600', 'text-gray-900');
+}
+</script>
+{% endblock %}

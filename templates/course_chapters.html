@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">{{ course.title }}</h1>
+            <p class="text-lg text-gray-600">Course Structure & Chapters</p>
+        </div>
+
+        <!-- Chapters Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Content -->
+            <div class="lg:col-span-2">
+                {% if chapters %}
+                    {% for chapter in chapters %}
+                    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h2 class="text-2xl font-bold text-blue-700">{{ chapter.title }}</h2>
+                                {% if chapter.description %}
+                                <p class="text-gray-600 mt-2">{{ chapter.description }}</p>
+                                {% endif %}
+                            </div>
+                            <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">
+                                {{ chapter.lessons | length }} Lessons
+                            </span>
+                        </div>
+
+                        <!-- Lessons in Chapter -->
+                        {% if chapter.lessons %}
+                        <div class="mt-4 space-y-3 border-t pt-4">
+                            {% for lesson in chapter.lessons | sort(attribute='order') %}
+                            <a href="{{ url_for('view_lesson', lesson_id=lesson.id) }}" 
+                               class="block p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg hover:shadow-md transition transform hover:translate-x-1">
+                                <div class="flex items-center">
+                                    <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-blue-500 text-white text-sm font-bold mr-3">
+                                        {{ loop.index }}
+                                    </span>
+                                    <div class="flex-1">
+                                        <h3 class="font-semibold text-gray-900">{{ lesson.title }}</h3>
+                                        <p class="text-sm text-gray-600">{{ lesson.description }}</p>
+                                    </div>
+                                    <span class="text-blue-600 font-semibold">→</span>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-gray-500 italic mt-4">No lessons in this chapter yet.</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="bg-white rounded-lg shadow-lg p-8 text-center">
+                    <p class="text-gray-500 text-lg">This course hasn't been organized into chapters yet.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Sidebar -->
+            <div class="lg:col-span-1">
+                <!-- Course Info Card -->
+                <div class="bg-white rounded-lg shadow-lg p-6 sticky top-24">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Course Overview</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="border-b pb-3">
+                            <p class="text-sm text-gray-600">Total Chapters</p>
+                            <p class="text-2xl font-bold text-blue-600">{{ chapters | length }}</p>
+                        </div>
+
+                        <div class="border-b pb-3">
+                            <p class="text-sm text-gray-600">Total Lessons</p>
+                            <p class="text-2xl font-bold text-indigo-600">
+                                {{ chapters | map(attribute='lessons') | map('length') | sum }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <p class="text-sm text-gray-600">Instructor</p>
+                            <p class="font-semibold text-gray-900">{{ course.instructor.first_name }} {{ course.instructor.last_name }}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex gap-2">
+                        <a href="{{ url_for('view_course', course_id=course.id) }}" 
+                           class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg transition">
+                            Back to Course
+                        </a>
+                        <a href="{{ url_for('view_course_content', course_id=course.id) }}" 
+                           class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
+                            Start Learning
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

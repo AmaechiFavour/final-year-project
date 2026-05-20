@@ -1,0 +1,67 @@
+{% extends "frappe_lms/base.html" %}
+{% block title %}Profile — FCLS{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <h1 class="text-3xl font-extrabold text-surface-900 mb-6">My Profile</h1>
+
+    <!-- Profile Card -->
+    <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-8 mb-6">
+        <div class="flex items-center gap-5 mb-6">
+            <div class="w-20 h-20 bg-gradient-to-br from-brand-500 to-brand-600 rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-lg shadow-brand-500/25">
+                {{ user.full_name[0] }}
+            </div>
+            <div>
+                <h2 class="text-xl font-extrabold text-surface-900">{{ user.full_name }}</h2>
+                {% if user.headline %}
+                <p class="text-surface-800/50">{{ user.headline }}</p>
+                {% endif %}
+                <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-brand-50 text-brand-600 mt-1 inline-block">{{ user.user_type }}</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 text-center mb-6">
+            <div class="bg-brand-50 rounded-xl p-4">
+                <div class="text-xl font-extrabold text-brand-600">{{ course_count }}</div>
+                <div class="text-xs text-surface-800/50">Enrolled Courses</div>
+            </div>
+            <div class="bg-emerald-50 rounded-xl p-4">
+                <div class="text-xl font-extrabold text-emerald-600">{{ cert_count }}</div>
+                <div class="text-xs text-surface-800/50">Certificates</div>
+            </div>
+        </div>
+
+        {% if user.bio %}
+        <div class="border-t border-surface-100 pt-4">
+            <h3 class="font-bold text-xs text-surface-800/40 uppercase tracking-wider mb-2">Bio</h3>
+            <p class="text-surface-800/70">{{ user.bio }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Edit Form -->
+    <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-8">
+        <h2 class="text-lg font-extrabold text-surface-900 mb-4">Edit Profile</h2>
+        <form method="POST" action="{{ url_for('update_profile') }}" class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-surface-800 mb-1.5">Full Name</label>
+                <div class="relative">
+                    <i class="fas fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-200"></i>
+                    <input type="text" name="full_name" value="{{ user.full_name }}" required class="w-full border border-surface-200 rounded-xl pl-10 pr-4 py-2.5 focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all text-sm">
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-surface-800 mb-1.5">Headline</label>
+                <div class="relative">
+                    <i class="fas fa-briefcase absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-200"></i>
+                    <input type="text" name="headline" value="{{ user.headline or '' }}" class="w-full border border-surface-200 rounded-xl pl-10 pr-4 py-2.5 focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all text-sm" placeholder="e.g. Software Engineer">
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-surface-800 mb-1.5">Bio</label>
+                <textarea name="bio" rows="4" class="w-full border border-surface-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all text-sm" placeholder="Tell us about yourself...">{{ user.bio or '' }}</textarea>
+            </div>
+            <button type="submit" class="bg-gradient-to-r from-brand-600 to-brand-500 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 transition-all">Save Changes</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

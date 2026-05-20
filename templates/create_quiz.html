@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Create Quiz - {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+        <a href="{{ url_for('manage_course', course_id=course.id) }}" class="text-blue-600 hover:text-blue-700">← Back to Course Management</a>
+        <h1 class="text-3xl font-bold text-gray-900 mt-2">Create Quiz</h1>
+        <p class="text-gray-600">{{ course.title }}</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('create_quiz', course_id=course.id) }}" id="quizForm">
+        <!-- Quiz Details -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Quiz Details</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Quiz Title *</label>
+                    <input type="text" name="title" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Passing Percentage</label>
+                    <input type="number" name="passing_percentage" value="70" min="0" max="100" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Time Limit (minutes)</label>
+                    <input type="number" name="duration_minutes" placeholder="Leave empty for unlimited" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Attempts Allowed</label>
+                    <input type="number" name="attempts_allowed" value="1" min="-1" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-gray-500 mt-1">-1 for unlimited attempts</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea name="description" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+        </div>
+
+        <!-- Questions -->
+        <div id="questionsContainer">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-4 question-block" data-index="0">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-gray-900">Question 1</h3>
+                    <span class="text-sm text-gray-500">Multiple Choice</span>
+                </div>
+                <input type="hidden" name="question_0_type" value="multiple_choice">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Question Text *</label>
+                    <textarea name="question_0_text" required rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Marks</label>
+                    <input type="number" name="question_0_marks" value="1" min="1" class="w-32 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="space-y-2">
+                    <p class="text-sm font-medium text-gray-700">Options (select the correct answer):</p>
+                    <div class="flex items-center gap-2">
+                        <input type="radio" name="question_0_correct" value="0" checked>
+                        <input type="text" name="question_0_option_0" required placeholder="Option A" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="radio" name="question_0_correct" value="1">
+                        <input type="text" name="question_0_option_1" required placeholder="Option B" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="radio" name="question_0_correct" value="2">
+                        <input type="text" name="question_0_option_2" required placeholder="Option C" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="radio" name="question_0_correct" value="3">
+                        <input type="text" name="question_0_option_3" required placeholder="Option D" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex gap-4 mb-8">
+            <button type="button" onclick="addQuestion()" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-300 transition">
+                + Add Question
+            </button>
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">
+                Create Quiz
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+let questionCount = 1;
+
+function addQuestion() {
+    const idx = questionCount;
+    const container = document.getElementById('questionsContainer');
+    const html = `
+    <div class="bg-white rounded-lg shadow-md p-6 mb-4 question-block" data-index="${idx}">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-gray-900">Question ${idx + 1}</h3>
+            <button type="button" onclick="this.closest('.question-block').remove()" class="text-red-500 hover:text-red-700 text-sm">Remove</button>
+        </div>
+        <input type="hidden" name="question_${idx}_type" value="multiple_choice">
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Question Text *</label>
+            <textarea name="question_${idx}_text" required rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Marks</label>
+            <input type="number" name="question_${idx}_marks" value="1" min="1" class="w-32 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="space-y-2">
+            <p class="text-sm font-medium text-gray-700">Options (select the correct answer):</p>
+            <div class="flex items-center gap-2">
+                <input type="radio" name="question_${idx}_correct" value="0" checked>
+                <input type="text" name="question_${idx}_option_0" required placeholder="Option A" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="flex items-center gap-2">
+                <input type="radio" name="question_${idx}_correct" value="1">
+                <input type="text" name="question_${idx}_option_1" required placeholder="Option B" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="flex items-center gap-2">
+                <input type="radio" name="question_${idx}_correct" value="2">
+                <input type="text" name="question_${idx}_option_2" required placeholder="Option C" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="flex items-center gap-2">
+                <input type="radio" name="question_${idx}_correct" value="3">
+                <input type="text" name="question_${idx}_option_3" required placeholder="Option D" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+        </div>
+    </div>
+    `;
+    container.insertAdjacentHTML('beforeend', html);
+    questionCount++;
+}
+</script>
+{% endblock %}

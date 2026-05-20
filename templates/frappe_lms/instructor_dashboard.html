@@ -1,0 +1,252 @@
+{% extends "frappe_lms/base.html" %}
+{% block title %}Instructor Dashboard — FCLS{% endblock %}
+{% block content %}
+<!-- Top Header -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+    <div>
+        <h1 class="text-2xl font-extrabold text-surface-900">Welcome back, {{ user.full_name.split(' ')[0] }}</h1>
+        <p class="text-surface-800/50 text-sm mt-1">Manage your courses and track student progress</p>
+    </div>
+    <a href="{{ url_for('create_course') }}" class="bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-700 hover:to-brand-600 text-white font-semibold py-2.5 px-5 rounded-xl shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 transition-all text-sm flex items-center gap-2">
+        <i class="fas fa-plus"></i> Create Course
+    </a>
+</div>
+
+<!-- Stat Cards - Peerup Style -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-5 hover:shadow-md hover:border-brand-200 transition-all">
+        <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 bg-brand-100 rounded-xl flex items-center justify-center">
+                <i class="fas fa-user-graduate text-brand-600"></i>
+            </div>
+        </div>
+        <p class="text-2xl font-extrabold text-surface-900">{{ stats.students }}</p>
+        <p class="text-xs text-surface-800/50 mt-1">Total Students</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-5 hover:shadow-md hover:border-brand-200 transition-all">
+        <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center">
+                <i class="fas fa-book text-violet-600"></i>
+            </div>
+        </div>
+        <p class="text-2xl font-extrabold text-surface-900">{{ stats.courses }}</p>
+        <p class="text-xs text-surface-800/50 mt-1">Active Courses</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-5 hover:shadow-md hover:border-brand-200 transition-all">
+        <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                <i class="fas fa-star text-amber-600"></i>
+            </div>
+            <span class="text-xs text-surface-800/40">{{ stats.total_reviews }} reviews</span>
+        </div>
+        <p class="text-2xl font-extrabold text-surface-900">{{ stats.avg_rating }}</p>
+        <p class="text-xs text-surface-800/50 mt-1">Average Rating</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-5 hover:shadow-md hover:border-brand-200 transition-all">
+        <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <i class="fas fa-users text-emerald-600"></i>
+            </div>
+        </div>
+        <p class="text-2xl font-extrabold text-surface-900">{{ stats.total_enrollments }}</p>
+        <p class="text-xs text-surface-800/50 mt-1">Total Enrollments</p>
+    </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left Column (2/3) -->
+    <div class="lg:col-span-2 space-y-6">
+
+        <!-- Pending Submissions - Like Peerup Booking Requests -->
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-6">
+            <div class="flex items-center justify-between mb-5">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-extrabold text-surface-900">Pending Submissions</h2>
+                    {% if pending_count > 0 %}
+                    <span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded-full">{{ pending_count }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if pending_submissions %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-surface-100">
+                            <th class="text-left py-3 px-2 text-xs font-semibold text-surface-800/50 uppercase tracking-wider">Student</th>
+                            <th class="text-left py-3 px-2 text-xs font-semibold text-surface-800/50 uppercase tracking-wider">Assignment</th>
+                            <th class="text-left py-3 px-2 text-xs font-semibold text-surface-800/50 uppercase tracking-wider">Course</th>
+                            <th class="text-left py-3 px-2 text-xs font-semibold text-surface-800/50 uppercase tracking-wider">Submitted</th>
+                            <th class="text-right py-3 px-2 text-xs font-semibold text-surface-800/50 uppercase tracking-wider">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sub in pending_submissions %}
+                        <tr class="border-b border-surface-50 hover:bg-surface-50/50 transition">
+                            <td class="py-3 px-2">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-7 h-7 bg-brand-100 rounded-full flex items-center justify-center">
+                                        <span class="text-xs font-bold text-brand-600">{{ sub.student_name[:1] }}</span>
+                                    </div>
+                                    <span class="font-medium text-surface-900">{{ sub.student_name }}</span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-2 text-surface-800/70">{{ sub.assignment_title }}</td>
+                            <td class="py-3 px-2 text-surface-800/40">{{ sub.course_title }}</td>
+                            <td class="py-3 px-2 text-surface-800/40">{{ sub.submitted_at }}</td>
+                            <td class="py-3 px-2 text-right">
+                                <span class="text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg font-semibold cursor-default">
+                                    Review
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-8">
+                <div class="w-12 h-12 bg-surface-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-clipboard-check text-lg text-surface-200"></i>
+                </div>
+                <p class="text-surface-800/40 text-sm">No pending submissions to review</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- My Courses -->
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-6">
+            <div class="flex items-center justify-between mb-5">
+                <h2 class="text-lg font-extrabold text-surface-900">Your Courses</h2>
+                <span class="text-xs text-surface-800/50">{{ stats.courses }} total</span>
+            </div>
+            {% if courses %}
+            <div class="space-y-4">
+                {% for course in courses %}
+                <div class="flex items-start gap-4 p-4 border border-surface-100 rounded-xl hover:border-brand-200 hover:bg-brand-50/20 transition-all group">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center flex-shrink-0">
+                        <span class="text-white text-lg font-bold">{{ course.title[:1] }}</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <a href="{{ url_for('course_detail', slug=course.slug) }}" class="font-bold text-surface-900 text-sm hover:text-brand-600 transition">{{ course.title }}</a>
+                                <p class="text-xs text-surface-800/40 mt-0.5">{{ course.short_introduction[:80] if course.short_introduction else '' }}{% if course.short_introduction and course.short_introduction|length > 80 %}...{% endif %}</p>
+                            </div>
+                            <span class="flex-shrink-0 ml-2 text-xs font-semibold px-2 py-0.5 rounded-md {{ 'bg-emerald-50 text-emerald-700' if course.published else 'bg-surface-100 text-surface-800/50' }}">
+                                {{ 'Published' if course.published else 'Draft' }}
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-4 mt-3 text-xs text-surface-800/40">
+                            <span><i class="fas fa-users mr-1"></i>{{ course.enrollments }} students</span>
+                            <span><i class="fas fa-layer-group mr-1"></i>{{ course.chapters|length }} chapters</span>
+                            <span><i class="fas fa-question-circle mr-1"></i>{{ course.quizzes|length }} quizzes</span>
+                            {% if course.rating %}<span class="text-amber-400"><i class="fas fa-star mr-1"></i>{{ course.rating }}</span>{% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-10">
+                <div class="w-14 h-14 bg-surface-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-book text-xl text-surface-200"></i>
+                </div>
+                <p class="text-surface-800/40 text-sm">No courses yet</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Column (1/3) -->
+    <div class="space-y-6">
+
+        <!-- Teaching Profile - Like Peerup Profile Card -->
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-6">
+            <div class="text-center mb-5">
+                <div class="w-16 h-16 bg-gradient-to-br from-brand-500 to-brand-700 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <span class="text-white text-xl font-bold">{{ user.full_name[:2]|upper }}</span>
+                </div>
+                <h3 class="font-bold text-surface-900">{{ user.full_name }}</h3>
+                <p class="text-xs text-surface-800/40 mt-0.5">Instructor</p>
+            </div>
+
+            <div class="space-y-3 mb-5">
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-surface-800/60">Status</span>
+                    <span class="bg-emerald-50 text-emerald-700 text-xs font-medium px-2 py-0.5 rounded-full">Active</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-surface-800/60">Courses</span>
+                    <span class="font-bold text-surface-900">{{ stats.courses }}</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-surface-800/60">Lessons</span>
+                    <span class="font-bold text-surface-900">{{ stats.total_lessons }}</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-surface-800/60">Quizzes</span>
+                    <span class="font-bold text-surface-900">{{ stats.total_quizzes }}</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-surface-800/60">Enrollments</span>
+                    <span class="font-bold text-surface-900">{{ stats.total_enrollments }}</span>
+                </div>
+            </div>
+
+            <!-- Teaching Checklist -->
+            <div class="border-t border-surface-100 pt-4">
+                <p class="text-xs font-semibold text-surface-800/40 uppercase tracking-wider mb-3">Teaching Checklist</p>
+                <div class="space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="{{ 'text-emerald-500' if stats.courses >= 1 else 'text-surface-200' }}">{% if stats.courses >= 1 %}<i class="fas fa-check-circle"></i>{% else %}<i class="far fa-circle"></i>{% endif %}</span>
+                        <span class="text-sm {{ 'text-surface-900' if stats.courses >= 1 else 'text-surface-800/30' }}">Created first course</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="{{ 'text-emerald-500' if stats.total_lessons >= 1 else 'text-surface-200' }}">{% if stats.total_lessons >= 1 %}<i class="fas fa-check-circle"></i>{% else %}<i class="far fa-circle"></i>{% endif %}</span>
+                        <span class="text-sm {{ 'text-surface-900' if stats.total_lessons >= 1 else 'text-surface-800/30' }}">Added lesson content</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="{{ 'text-emerald-500' if stats.total_quizzes >= 1 else 'text-surface-200' }}">{% if stats.total_quizzes >= 1 %}<i class="fas fa-check-circle"></i>{% else %}<i class="far fa-circle"></i>{% endif %}</span>
+                        <span class="text-sm {{ 'text-surface-900' if stats.total_quizzes >= 1 else 'text-surface-800/30' }}">Created a quiz</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="{{ 'text-emerald-500' if stats.students >= 1 else 'text-surface-200' }}">{% if stats.students >= 1 %}<i class="fas fa-check-circle"></i>{% else %}<i class="far fa-circle"></i>{% endif %}</span>
+                        <span class="text-sm {{ 'text-surface-900' if stats.students >= 1 else 'text-surface-800/30' }}">Got first student</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="{{ 'text-emerald-500' if stats.total_reviews >= 1 else 'text-surface-200' }}">{% if stats.total_reviews >= 1 %}<i class="fas fa-check-circle"></i>{% else %}<i class="far fa-circle"></i>{% endif %}</span>
+                        <span class="text-sm {{ 'text-surface-900' if stats.total_reviews >= 1 else 'text-surface-800/30' }}">Received first review</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Feed -->
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-6">
+            <h3 class="text-lg font-extrabold text-surface-900 mb-4">Recent Activity</h3>
+            {% if recent_activity %}
+            <div class="space-y-3">
+                {% for activity in recent_activity %}
+                <div class="flex items-start gap-3 py-2">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
+                        {% if activity.type == 'enrollment' %}bg-brand-100{% elif activity.type == 'quiz' %}bg-emerald-100{% elif activity.type == 'review' %}bg-amber-100{% else %}bg-surface-100{% endif %}">
+                        <span class="text-xs">{{ activity.icon }}</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm text-surface-900 leading-snug">{{ activity.title }}</p>
+                        <p class="text-xs text-surface-800/40 mt-0.5">{{ activity.date }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-6">
+                <p class="text-surface-800/40 text-sm">No recent activity yet</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

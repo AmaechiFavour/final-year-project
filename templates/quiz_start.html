@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}{{ quiz.title }} - Quiz{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-lg shadow-md p-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ quiz.title }}</h1>
+        
+        <div class="bg-blue-50 rounded p-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <p class="text-sm text-gray-600">Questions</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ quiz.questions|length }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Time Limit</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ quiz.time_limit or 'No limit' }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Passing Score</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ quiz.passing_percentage }}%</p>
+                </div>
+            </div>
+        </div>
+
+        <p class="text-gray-600 mb-6">{{ quiz.description or 'Complete this quiz to test your knowledge.' }}</p>
+
+        <div class="bg-yellow-50 border border-yellow-200 rounded p-4 mb-6">
+            <p class="text-sm text-yellow-800">⚠️ Once you start, you will have {{ quiz.time_limit or 'unlimited' }} minutes to complete this quiz. Make sure you're ready!</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('start_quiz', quiz_id=quiz.id) }}" class="flex gap-4">
+            <button type="submit" class="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700">Start Quiz</button>
+            <a href="javascript:history.back()" class="bg-gray-200 text-gray-900 px-8 py-3 rounded-lg font-semibold hover:bg-gray-300">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

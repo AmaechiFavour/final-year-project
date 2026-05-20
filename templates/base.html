@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}E-Learning Portal - Faculty of Computing{% endblock %}</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.css">
+    <style>
+        :root {
+            --color-primary: #3b82f6;
+            --color-primary-dark: #2563eb;
+            --color-accent: #f59e0b;
+            --color-success: #10b981;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            @apply bg-gray-50;
+        }
+
+        .nav-link {
+            @apply px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200;
+        }
+
+        .nav-link:hover {
+            @apply bg-blue-50 text-blue-700;
+        }
+
+        .card-hover {
+            @apply transition-all duration-300 hover:shadow-lg hover:scale-105;
+        }
+
+        .btn-primary {
+            @apply bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors;
+        }
+
+        .btn-secondary {
+            @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors;
+        }
+
+        .btn-outline {
+            @apply border border-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors;
+        }
+
+        .course-card {
+            @apply bg-white rounded-lg overflow-hidden shadow-md card-hover;
+        }
+
+        .badge {
+            @apply inline-block px-2 py-1 rounded-full text-xs font-semibold;
+        }
+
+        .badge-blue {
+            @apply bg-blue-100 text-blue-800;
+        }
+
+        .badge-green {
+            @apply bg-green-100 text-green-800;
+        }
+
+        .badge-amber {
+            @apply bg-amber-100 text-amber-800;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <a href="/" class="flex items-center space-x-2 font-bold text-xl text-blue-600">
+                    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5.951-1.429 5.951 1.42a1 1 0 001.17-1.409l-7-14z"></path>
+                    </svg>
+                    <span>E-Learning</span>
+                </a>
+
+                <!-- Center Menu -->
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="/" class="nav-link text-gray-700">Home</a>
+                    {% if logged_in %}
+                        <a href="{{ url_for('browse_courses') }}" class="nav-link text-gray-700">Courses</a>
+                    {% endif %}
+                </div>
+
+                <!-- Right Menu -->
+                <div class="flex items-center space-x-4">
+                    {% if logged_in and user %}
+                        <div class="hidden sm:flex items-center space-x-4 border-l border-gray-200 pl-4">
+                            {% if user.account == 'student' %}
+                                <a href="{{ url_for('student_dashboard') }}" class="nav-link text-gray-700">Dashboard</a>
+                            {% elif user.account == 'teacher' %}
+                                <a href="{{ url_for('teacher_dashboard') }}" class="nav-link text-gray-700">My Courses</a>
+                                <a href="{{ url_for('create_course') }}" class="btn-primary text-xs">Create</a>
+                            {% elif user.account == 'admin' %}
+                                <a href="{{ url_for('admin_dashboard') }}" class="nav-link text-gray-700">Admin</a>
+                            {% endif %}
+                        </div>
+
+                        <!-- User Menu Dropdown -->
+                        <div class="relative group">
+                            <button class="flex items-center space-x-2 text-sm text-gray-700 hover:text-blue-600">
+                                {% if user.profile_picture %}
+                                    <img src="{{ user.profile_picture }}" alt="{{ user.first_name }}" 
+                                         class="w-8 h-8 rounded-full object-cover border-2 border-blue-100"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div class="w-8 h-8 bg-blue-600 text-white rounded-full items-center justify-center font-semibold" style="display:none;">
+                                        {{ user.first_name[0].upper() if user.first_name else 'U' }}
+                                    </div>
+                                {% else %}
+                                    <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">
+                                        {{ user.first_name[0].upper() if user.first_name else 'U' }}
+                                    </div>
+                                {% endif %}
+                            </button>
+                            <div class="absolute right-0 mt-0 w-48 bg-white rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto">
+                                <a href="{{ url_for('profile') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">Profile</a>
+                                <a href="{{ url_for('profile') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">Settings</a>
+                                <hr class="my-1">
+                                <a href="{{ url_for('logout') }}" class="block px-4 py-2 text-red-600 hover:bg-red-50">Logout</a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="nav-link text-gray-700">Login</a>
+                        <a href="{{ url_for('register') }}" class="btn-primary">Register</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="fixed top-4 right-4 z-50 px-4 py-3 rounded-lg text-white {% if category == 'error' %}bg-red-500{% elif category == 'success' %}bg-green-500{% else %}bg-blue-500{% endif %} shadow-lg animate-pulse max-w-sm">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-300 mt-20 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h3 class="text-white font-bold mb-4">About</h3>
+                    <p class="text-sm">Faculty of Computing E-Learning Portal - Empowering students with quality online education.</p>
+                </div>
+                <div>
+                    <h3 class="text-white font-bold mb-4">Quick Links</h3>
+                    <ul class="text-sm space-y-2">
+                        <li><a href="/" class="hover:text-white transition">Home</a></li>
+                        <li><a href="{{ url_for('browse_courses') }}" class="hover:text-white transition">Courses</a></li>
+                        <li><a href="#" class="hover:text-white transition">About</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-white font-bold mb-4">Support</h3>
+                    <ul class="text-sm space-y-2">
+                        <li>Email: <a href="mailto:support@faculty.local" class="hover:text-white transition">support@faculty.local</a></li>
+                        <li>Phone: +1 (555) 123-4567</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-white font-bold mb-4">Follow</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="hover:text-white transition">Twitter</a>
+                        <a href="#" class="hover:text-white transition">LinkedIn</a>
+                        <a href="#" class="hover:text-white transition">GitHub</a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 text-center text-sm">
+                <p>&copy; 2024 Faculty of Computing E-Learning Portal. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

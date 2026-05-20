@@ -1,0 +1,1708 @@
+Chapter Three: Methodology/System Analysis and Design
+
+3.1 Introduction to system analysis
+System analysis is the structured process of understanding a problem domain, identifying weaknesses in the current process, eliciting requirements from stakeholders, and producing an implementable solution model. In this project, the problem domain is digital teaching and learning in a Faculty of Computing environment where internet connectivity may be unstable, expensive, or unavailable. The objective of system analysis was to design an offline-capable Learning Management System (LMS) that supports the complete teaching and learning cycle: course creation, enrollment, lesson delivery, assignments, quizzes, progress monitoring, discussions, certificates, and administration.
+
+The analysis phase focused on three categories of stakeholders:
+1. Students: need easy course discovery, enrollment, content access, assessment participation, and progress visibility.
+2. Instructors/Teachers: need tools for course authoring, learner management, assessment setup, grading, announcements, and analytics.
+3. Administrators: need institution-wide visibility, user governance, and platform health metrics.
+
+The system analysis produced a role-based architecture implemented in Flask with SQLAlchemy and SQLite, with a practical focus on deployment simplicity and low hardware requirements. The final design also considered extensibility toward a more comprehensive Frappe LMS-compatible schema included in the repository (models_frappe_complete.py, routes_frappe_complete.py, main_frappe.py) for future scaling and migration.
+
+3.2 Research methodology (Where applicable)
+A design-and-build methodology (applied software engineering methodology) was used, combining elements of:
+- Requirement elicitation through stakeholder-oriented needs analysis.
+- Rapid prototyping to refine UI and workflow decisions.
+- Iterative development and testing cycles.
+- Comparative architecture review (existing Flask core versus Frappe-style complete model set).
+
+Methodological steps used:
+1. Problem identification:
+   - Existing teaching workflows relied on fragmented manual tools.
+   - Need for centralized and offline-capable LMS identified.
+2. Requirement gathering:
+   - Functional requirements (registration, course management, quizzes, assignments, dashboards, etc.).
+   - Non-functional requirements (offline availability, responsiveness, role-based security, maintainability).
+3. System modeling:
+   - Data model design using entity relationships in SQLAlchemy.
+   - Route and permission design for student/teacher/admin workflows.
+4. Implementation:
+   - Primary implementation in main_enhanced.py and models.py.
+   - Initialization scripts for realistic sample data (init_db.py).
+5. Validation/testing:
+   - Functional route tests and manual role-based scenario testing.
+   - Error-handler and edge-case checks (access denial, duplicate enrollment, invalid credentials).
+6. Comparative enhancement planning:
+   - Frappe-style model/API extension prepared for long-term migration.
+
+Research approach justification:
+- The project is an applied system development study, so iterative prototyping is suitable.
+- Directly testing workflows with role-specific accounts provides practical validation.
+- Building both baseline and advanced architecture options in one repository supports future upgrade feasibility analysis.
+
+3.3 Description of the existing system
+Before the proposed system, common instructional delivery in many local contexts can be described as semi-manual and fragmented. Typical characteristics include:
+- Course materials shared via ad-hoc channels (email, messaging platforms, flash drives).
+- Assignments submitted via unstructured media with limited traceability.
+- Quiz and exam records stored separately from learning content.
+- No reliable centralized progress tracking.
+- Limited analytics for instructors and administrators.
+- Weak continuity in low-connectivity/offline environments.
+
+Challenges in the existing approach:
+1. Data fragmentation:
+   - Student records, grades, and learning content are dispersed across files and media.
+2. Weak accountability:
+   - Hard to confirm completion status, assignment timestamps, and grading fairness.
+3. Low scalability:
+   - As classes grow, manual handling becomes inefficient and error-prone.
+4. Poor learner feedback loop:
+   - Students do not receive immediate performance analytics in many manual systems.
+5. Inconsistent access control:
+   - No strict role-based permission model in informal platforms.
+
+Within the repository context, an earlier simpler Flask structure existed but lacked full parity with enterprise LMS design principles. The redesigned project addressed this by introducing rich models, expanded routes, improved dashboards, and migration-ready architecture.
+
+3.4 The Proposed System
+The proposed system is an offline-first Faculty of Computing Learning System (FCLS), implemented primarily with Flask, SQLAlchemy, and SQLite. It is designed to provide end-to-end academic workflow support across student, teacher, and admin roles.
+
+Core proposed capabilities:
+1. User and role management:
+   - Role types: student, teacher, admin.
+   - Registration/login, profile management, role-based redirection and route guards.
+2. Course lifecycle management:
+   - Create, edit, publish, archive courses.
+   - Structured metadata (category, difficulty, duration, summary, requirements).
+3. Learning content delivery:
+   - Lessons and optional chapter grouping.
+   - Lesson navigation (previous/next) and completion tracking.
+   - Resource and media upload support.
+4. Assessment subsystem:
+   - Quizzes with multiple question types and configurable pass threshold.
+   - Attempt records, answer tracking, score computation, pass/fail status.
+   - Assignments with student submissions, file uploads, grading, and feedback.
+5. Enrollment and progress:
+   - Course enrollment with duplicate prevention.
+   - Lesson-based progress aggregation per course.
+6. Extended engagement features:
+   - Course discussions and replies.
+   - Course reviews and rating.
+   - Batch scheduling and live class management.
+7. Certification:
+   - Certificate issuance for qualifying learners (progress threshold logic).
+8. Administration and monitoring:
+   - User/course management and dashboard statistics.
+   - Growth and participation indicators.
+
+Implementation variants in repository:
+- Operational enhanced app: main_enhanced.py + models.py + templates/.
+- Advanced migration track: main_frappe.py + models_frappe_complete.py + routes_frappe_complete.py + frappe_lms templates.
+
+This dual-track design supports immediate deployment while preserving an upgrade path to broader LMS feature parity.
+
+3.5 Significance and Challenges of the proposed system
+Significance:
+1. Offline suitability:
+   - Functions without internet dependency, ideal for constrained environments.
+2. Educational process integration:
+   - Unifies course delivery, assessment, feedback, and analytics in one platform.
+3. Institutional value:
+   - Enables data-driven monitoring for faculty-level decision-making.
+4. Learner empowerment:
+   - Students can self-monitor progress and performance.
+5. Instructor productivity:
+   - Structured tools for content authoring, grading, and engagement.
+6. Scalability pathway:
+   - Frappe-compatible data architecture included for future growth.
+
+Challenges:
+1. Security maturity:
+   - Current implementation uses plain password comparison in core routes; production requires hashing and stronger auth controls.
+2. Manual testing bias:
+   - Automated test suites are not yet present in the repository.
+3. SQLite scaling constraints:
+   - Suitable for small-to-medium institutional use, but high concurrency requires migration to PostgreSQL/MySQL.
+4. Data migration complexity:
+   - Transitioning from baseline schema to complete Frappe schema requires controlled migration and validation.
+5. Feature consistency across variants:
+   - Maintaining parity between main_enhanced.py and main_frappe.py requires governance.
+6. Operational hardening:
+   - Additional measures needed for production (CSRF, rate limiting, secure secrets management, HTTPS).
+
+3.6 Data Collection
+Data collection in this project was primarily requirements and process data collection rather than machine learning data collection. The following techniques were applied:
+1. Stakeholder requirement capture:
+   - Student expectations: enrollment simplicity, clear progress indicators, quick quiz feedback.
+   - Instructor expectations: easy content upload, grading workflows, class analytics.
+   - Admin expectations: global metrics, user/course management, growth tracking.
+2. Workflow observation:
+   - Observation of typical teaching operations (course creation, student registration, assignment distribution, grading turnaround).
+3. Artifact analysis:
+   - Analysis of repository files, route structures, data models, template workflows, setup scripts, and migration guides.
+4. Scenario-based task analysis:
+   - End-user scenarios built for all roles to define success criteria.
+
+Data sources in repository context:
+- Documentation files: README.md, QUICK_START.md, PROJECT_SUMMARY.md, FRAPPE_LMS_MIGRATION_GUIDE.md, REDESIGN_SUMMARY.md.
+- Source files: main_enhanced.py, models.py, init_db.py, main_frappe.py, routes_frappe_complete.py.
+- UI templates: student, teacher, admin, and course/assessment pages.
+
+3.7 Data set Collection (if applicable)
+This system is not a machine learning predictive model, so a labeled dataset for training is not required. However, a structured application seed dataset is used for development and demonstration through init_db.py (and separately init_frappe_lms.py for migration track).
+
+Seed dataset purpose:
+- Validate role-based features under realistic records.
+- Provide demonstration data for presentation and testing.
+- Support reproducible setup across systems.
+
+Seed data characteristics (main enhanced app):
+- Users:
+  - 1 admin.
+  - 2 teachers.
+  - 10 students.
+- Courses:
+  - Multiple published sample courses across categories.
+- Content:
+  - Lessons, chapters, quizzes, questions/options.
+- Assessments:
+  - Assignments and submissions-ready structure.
+- Engagement:
+  - Discussions, discussion replies, course reviews.
+- Schedule/collaboration:
+  - Batches and live classes.
+- Achievement:
+  - Certificates with verification hash field.
+
+Hence, dataset collection here is best described as “application operational data provisioning” rather than “analytical model training data acquisition.”
+
+3.8 System Design (Structural Design, Database Design and Specification, Interface Design)
+
+3.8.1 Structural Design
+The system follows a layered MVC-like Flask structure:
+- Presentation Layer:
+  - Jinja2 templates under templates/ and templates/frappe_lms/.
+- Application Layer:
+  - Route controllers in main_enhanced.py and routes_frappe_complete.py.
+- Domain/Data Layer:
+  - SQLAlchemy models in models.py and models_frappe_complete.py.
+- Persistence Layer:
+  - SQLite database (elearning.db / frappe_lms.db).
+- File Storage:
+  - uploads/ directory for profile images, lesson videos, assignment files.
+
+Major structural modules:
+1. Authentication and session control.
+2. Role-based dashboard routing.
+3. Course and lesson management.
+4. Quiz lifecycle management.
+5. Assignment lifecycle and grading.
+6. Batch/live class coordination.
+7. Discussions/reviews/certifications.
+8. Admin monitoring and governance.
+
+3.8.2 Database Design and Specification
+Database technology:
+- SQLite through Flask-SQLAlchemy ORM.
+
+Primary entities in operational model (models.py):
+1. User:
+   - Identity, role, status, profile details.
+2. Course:
+   - Metadata, publication state, instructor relation.
+3. Enrollment:
+   - Student-course relationship with completion/progress fields.
+4. Lesson / Lesson_Resource / Lesson_Progress:
+   - Content unit, materials, and learner completion tracking.
+5. Quiz / Quiz_Question / Quiz_Option / Quiz_Attempt / Quiz_Answer:
+   - Assessment model with answer/score persistence.
+6. Assignment / Assignment_Submission:
+   - Instructor tasks and learner submissions with grading fields.
+7. Announcement:
+   - Course communication notices.
+8. Chapter:
+   - Logical course content grouping.
+9. Batch / BatchEnrollment:
+   - Cohort-based course delivery.
+10. LiveClass:
+   - Scheduled virtual class sessions.
+11. Certificate:
+   - Completion artifacts and verification identifiers.
+12. Discussion / DiscussionReply:
+   - Forum-like learner-instructor communication.
+13. CourseReview:
+   - Rating and textual feedback.
+
+Database constraints and integrity features:
+- Unique email per user.
+- Unique student-course enrollment pair.
+- Unique batch-student pair.
+- Unique course-student review pair.
+- Foreign key relationships and cascade deletion for dependent entities.
+
+3.8.3 Interface Design
+Design principles:
+1. Role-sensitive navigation:
+   - Student, teacher, and admin see context-specific pages/actions.
+2. Responsive layout:
+   - Templates designed for desktop/tablet with Bootstrap/Tailwind influenced styles.
+3. Task-centric pages:
+   - Separate pages for course content, lesson view, quiz flow, assignment details, grading, etc.
+4. Feedback mechanisms:
+   - Flash messages for errors/success outcomes.
+5. Clarity of progression:
+   - Dashboard cards and progress indicators for learning state.
+
+Key interfaces:
+- Public: home, login, register, courses, course detail.
+- Student: dashboard, course content, lesson, quiz, assignment, certificates.
+- Teacher: dashboard, course create/edit/manage, quiz/assignment creation, grading, issue certificates.
+- Admin: dashboard, user/course management pages.
+
+3.9 Design methodology (Materials and Method)
+Materials:
+1. Software tools:
+   - Python 3.x
+   - Flask 3.0
+   - Flask-SQLAlchemy
+   - Flask-Login (dependency present)
+   - Flask-Mail (available for notification use)
+   - Jinja2 templates
+   - SQLite database engine
+2. Supporting libraries:
+   - Werkzeug (request/session and file handling)
+   - python-dotenv
+   - Pillow, PyPDF2, requests, PyYAML
+3. Development assets:
+   - Git-managed source code repository.
+   - Documentation and setup scripts (run.bat, run.sh).
+
+Method:
+1. Requirement analysis and role decomposition.
+2. Entity modeling and relationship design in SQLAlchemy.
+3. Route-first implementation of core workflows.
+4. UI template mapping to route logic.
+5. Seed data generation to support realistic validation.
+6. Iterative extension with advanced modules (batches, live classes, discussions, reviews).
+7. Migration track preparation for complete Frappe-style architecture.
+8. Functional and scenario testing using role credentials and end-to-end page flow.
+
+3.10 System architecture
+Architecture type:
+- Monolithic web application with modular domains and role-based controllers.
+
+Logical architecture components:
+1. Client layer:
+   - Browser-based interface.
+2. Web server/application runtime:
+   - Flask app serving routes and templates.
+3. Business logic layer:
+   - Validation, role checks, scoring logic, progress computation.
+4. Data access layer:
+   - SQLAlchemy ORM translating objects to SQL.
+5. Database storage:
+   - SQLite file-based relational persistence.
+6. File storage subsystem:
+   - Local uploads directory.
+
+Deployment architecture:
+- Single-host local deployment for offline use.
+- Startup with Python command or helper scripts.
+- Default endpoint: http://localhost:5000.
+
+Security architecture highlights:
+- Session-based authentication.
+- Decorator-based access control (login_required, teacher_required, admin_required).
+- Input processing and secure_filename for file upload naming.
+- Defined file extension whitelist and upload size limits.
+
+Architecture evolution path:
+- Existing architecture supports immediate use.
+- Alternative architecture (main_frappe.py + complete models/routes) provides expansion toward richer API-first operation.
+
+3.11 System UML implementation
+This section presents textual UML implementation artifacts aligned with the built system.
+
+3.11.1 Use Case Model (High-level)
+Actors:
+- Student
+- Teacher
+- Admin
+
+Student use cases:
+- Register and login.
+- Browse and enroll in courses.
+- View lessons and mark completion.
+- Take quizzes and view results.
+- Submit assignments.
+- Participate in discussions.
+- Review courses.
+- View certificates.
+
+Teacher use cases:
+- Login and access instructor dashboard.
+- Create/edit/publish courses.
+- Create chapters/lessons/quizzes/assignments.
+- Grade assignment submissions.
+- Manage course students.
+- Schedule live classes and manage batches.
+- Issue certificates.
+
+Admin use cases:
+- Login and monitor platform dashboard.
+- Manage users and courses.
+- View growth and participation indicators.
+
+3.11.2 Class Model (Representative)
+Key classes and major associations:
+1. User
+   - 1..* Course (as instructor)
+   - 1..* Enrollment (as student)
+   - 1..* Assignment_Submission
+2. Course
+   - 1..* Lesson
+   - 1..* Enrollment
+   - 1..* Quiz
+   - 1..* Assignment
+   - 1..* Chapter
+3. Lesson
+   - 1..* Lesson_Resource
+   - 1..* Lesson_Progress
+4. Quiz
+   - 1..* Quiz_Question
+   - 1..* Quiz_Attempt
+5. Quiz_Question
+   - 1..* Quiz_Option
+   - 1..* Quiz_Answer
+6. Assignment
+   - 1..* Assignment_Submission
+7. Batch
+   - 1..* BatchEnrollment
+   - 1..* LiveClass
+8. Discussion
+   - 1..* DiscussionReply
+9. Course
+   - 1..* CourseReview
+10. Enrollment/CourseProgress signals completion eligibility to Certificate issuance.
+
+3.11.3 Sequence Model (Quiz submission scenario)
+Sequence narrative:
+1. Student opens quiz start page.
+2. System checks enrollment and attempt limit.
+3. Student starts attempt; system creates Quiz_Attempt.
+4. Student submits answers question by question.
+5. System persists Quiz_Answer for each question.
+6. Student submits quiz; system computes total marks and percentage.
+7. System updates attempt status (is_passed, submitted_at, time_taken_seconds).
+8. System redirects to results page.
+
+3.11.4 Activity Model (Course completion and certificate issuance)
+Flow narrative:
+1. Student enrolls in course.
+2. Student completes lessons; progress records updated.
+3. System computes overall course progress.
+4. If progress threshold met (configured 80% in implementation logic), student qualifies.
+5. Teacher triggers certificate issuance.
+6. System generates certificate record with certificate number and hash.
+7. Student views certificate page.
+
+3.12 Performance Evaluation Metrics (if applicable)
+Since this is an educational web information system, performance is evaluated through operational and user-centric metrics rather than ML accuracy metrics.
+
+Applicable metrics:
+1. Route response latency:
+   - Time for key pages (dashboard, course view, quiz submission).
+2. Throughput under local constraints:
+   - Number of successful role actions per minute in single-host environment.
+3. Database operation success rate:
+   - Ratio of successful CRUD transactions.
+4. Workflow completion rate:
+   - Percentage of students completing enrollment-to-assessment flow without system error.
+5. Data integrity indicators:
+   - Duplicate enrollment prevention effectiveness.
+   - Referential consistency in related records.
+6. Usability indicators:
+   - Time-to-complete tasks (e.g., create course, submit assignment).
+   - User-reported ease-of-use from pilot interaction.
+7. Reliability indicators:
+   - Frequency of unhandled exceptions.
+   - Correct execution of 404/500 handlers.
+
+Suggested benchmark targets for institutional deployment:
+- Typical page response < 2 seconds on local network hardware.
+- > 95% successful completion of core role workflows during acceptance testing.
+- Zero orphaned foreign-key relationship records after integration tests.
+
+
+Chapter Four: System Implementation And Testing
+
+4.1 Introduction
+This chapter describes how the proposed LMS was implemented, configured, executed, and validated. The system was developed as a practical offline web application for Faculty of Computing use. Implementation was driven by modular route grouping, normalized relational schema, and role-sensitive user interface templates.
+
+The chapter also explains tool selection, language justification, requirement mapping, deployment process, and testing outcomes.
+
+4.2 Language Implementation
+The backend implementation language is Python, using Flask as the web framework and SQLAlchemy as the ORM.
+
+Implementation details:
+1. Backend entry points:
+   - main_enhanced.py (primary runnable app).
+   - main.py (older/alternate flow with email/stripe references).
+   - main_frappe.py (advanced architecture variant).
+2. Data layer:
+   - models.py defines operational entities.
+   - models_frappe_complete.py defines migration-scale entities.
+3. Route layer:
+   - Monolithic but domain-organized route groups in main_enhanced.py.
+   - API-style blueprint routes in routes_frappe_complete.py.
+4. Presentation layer:
+   - Jinja2 HTML templates under templates/ and templates/frappe_lms/.
+
+4.3 Choice of Programming Language
+Python was selected because:
+1. Rapid development:
+   - Enables quick prototyping and iterative refinement.
+2. Readability and maintainability:
+   - Clear syntax beneficial for academic and team settings.
+3. Strong web ecosystem:
+   - Flask and SQLAlchemy simplify routing and persistence.
+4. Educational suitability:
+   - Commonly taught in computing programs, easing student and staff adoption.
+5. Cross-platform support:
+   - Works consistently on Windows, Linux, and macOS.
+
+4.4 Language justification
+The final language stack (Python + Flask + SQLAlchemy) is justified by system goals:
+1. Offline deployability:
+   - No heavy infrastructure dependency required.
+2. Modularity:
+   - Easy addition of features like discussions, batches, certificates.
+3. Community support:
+   - Mature libraries and extensive documentation.
+4. Alignment with project constraints:
+   - Supports low-resource environments and short implementation timelines.
+5. Extensibility:
+   - Project already includes growth path to more advanced Frappe-like models and API design.
+
+4.5 Requirement Specification (Functional and Non functional Requirements)
+
+4.5.1 Functional requirements
+1. User account operations:
+   - Register, login, logout, profile update, role-based dashboard access.
+2. Course management:
+   - Create, update, publish, archive, browse, and view courses.
+3. Enrollment management:
+   - Students enroll in courses; duplicate prevention is enforced.
+4. Lesson management:
+   - Teachers create/edit/delete lessons; students view and mark complete.
+5. Quiz management:
+   - Teachers create quizzes/questions/options; students attempt and submit quizzes.
+6. Assignment management:
+   - Teachers create assignments; students submit text/files; teachers grade.
+7. Progress tracking:
+   - System computes lesson-driven course progress per learner.
+8. Discussion forum:
+   - Course discussion creation, replies, and answer marking logic support.
+9. Course reviews:
+   - Students submit ratings and textual reviews.
+10. Batch and live class:
+   - Batch creation, student enrollment into batches, live class scheduling.
+11. Certification:
+   - Teacher-issued certificates for qualified learners.
+12. Admin controls:
+   - Manage users/courses and monitor platform statistics.
+
+4.5.2 Non-functional requirements
+1. Usability:
+   - Intuitive interfaces for non-technical and technical users.
+2. Performance:
+   - Responsive page transitions under local deployment constraints.
+3. Reliability:
+   - Consistent CRUD operations and error handling.
+4. Security:
+   - Role-based access checks and controlled upload handling.
+5. Maintainability:
+   - Modular files and readable code structure.
+6. Portability:
+   - Simple setup on major operating systems.
+7. Scalability path:
+   - Migration readiness toward broader schema/API structure.
+
+4.6 System Implementation and Deployment
+Implementation process summary:
+1. Environment setup:
+   - Python virtual environment creation.
+   - Dependency installation from requirements.txt.
+2. Database bootstrap:
+   - init_db.py builds tables and inserts sample records.
+3. Runtime initialization:
+   - main_enhanced.py checks DB and auto-loads sample data if empty.
+4. Application launch:
+   - Flask server starts on host 0.0.0.0 and port 5000.
+5. UI rendering:
+   - Template rendering via Jinja2 with role-aware navigation.
+
+Deployment approach:
+- Offline local deployment using scripts:
+  - run.bat (Windows).
+  - run.sh (Linux/macOS).
+- Optional parallel advanced deployment using main_frappe.py on alternate database/port.
+
+Operational data and files:
+- Database file: elearning.db (or frappe_lms.db for advanced variant).
+- Upload storage: uploads/.
+- Templates and static assets bundled in repository.
+
+4.7 System requirement
+Hardware requirements (minimum practical baseline):
+1. Processor:
+   - Dual-core CPU or higher.
+2. RAM:
+   - 2 GB minimum (4 GB recommended).
+3. Storage:
+   - 500 MB base application + additional content storage for uploads.
+4. Display/network:
+   - Standard browser-capable device; local host/network as needed.
+
+Software requirements:
+1. Operating system:
+   - Windows, Linux, or macOS.
+2. Runtime:
+   - Python 3.8+.
+3. Packages:
+   - Flask, Flask-SQLAlchemy, Flask-Mail, Flask-Login, Werkzeug, python-dotenv, Pillow, PyYAML, requests, PyPDF2.
+4. Browser:
+   - Any modern browser for UI interaction.
+
+4.8 System Evaluation
+Evaluation strategy:
+1. Scenario-based functional validation:
+   - Student, teacher, and admin end-to-end workflows tested.
+2. Role and permission checks:
+   - Restricted routes validated against non-authorized accounts.
+3. Data consistency checks:
+   - Enrollment uniqueness, review uniqueness, and relation integrity observed.
+4. UX acceptance observation:
+   - Dashboard comprehension and workflow clarity reviewed with sample users.
+
+Evaluation highlights:
+- Core workflows execute successfully from account creation to course participation and assessment.
+- Dashboard statistics are generated for admin overview.
+- Instructor operations (course/lesson/quiz/assignment) are operational.
+- Student operations (enrollment, lesson completion, quiz attempts, assignment submissions) are operational.
+
+Observed limitations during evaluation:
+- Security hardening remains a next phase requirement for production exposure.
+- Automated regression testing is not yet integrated.
+- Concurrent high-load evaluation beyond SQLite limits is not yet performed.
+
+4.9 Software development and testing tools (if applicable)
+Development tools used:
+1. Programming/runtime:
+   - Python interpreter.
+2. Framework and ORM:
+   - Flask and SQLAlchemy.
+3. Template engine:
+   - Jinja2.
+4. Database engine:
+   - SQLite.
+5. Environment/config tools:
+   - python-dotenv.
+6. File and content processing:
+   - Werkzeug, Pillow, PyPDF2.
+7. Command scripts:
+   - run.bat and run.sh for reproducible setup.
+
+Testing tools/process used:
+1. Manual functional testing via browser scenarios.
+2. Route-level validation using app interactions and debug feedback.
+3. Seed-data driven testing via init_db.py.
+4. Error-path testing through invalid login/access and missing-resource scenarios.
+
+Note:
+- No dedicated automated unit/integration test files were found in current repository state.
+
+4.10 System Testing and Documentation
+
+4.10.1 Testing approach
+Testing was organized into role-centered test cases:
+1. Authentication tests:
+   - Valid and invalid credentials.
+   - Session persistence and logout behavior.
+2. Student tests:
+   - Course browse and enrollment.
+   - Lesson completion and progress update.
+   - Quiz start, answer save, submit, and result view.
+   - Assignment submission with optional file upload.
+3. Teacher tests:
+   - Course creation and update.
+   - Lesson, quiz, and assignment creation.
+   - Submission grading and feedback update.
+   - Certificate issuing for qualified students.
+4. Admin tests:
+   - User and course listing/edit/deletion flows.
+   - Dashboard metric rendering.
+5. Error and edge tests:
+   - Unauthorized access redirection.
+   - Duplicate enrollments/reviews handling.
+   - Missing content 404 behavior and rollback on server errors.
+
+4.10.2 Documentation artifacts
+Documentation provided in repository includes:
+1. README.md:
+   - Feature overview, setup, credentials, usage, troubleshooting.
+2. QUICK_START.md:
+   - Accelerated startup steps.
+3. PROJECT_SUMMARY.md:
+   - Transformation summary and feature inventory.
+4. FRAPPE_LMS_MIGRATION_GUIDE.md:
+   - Migration options and implementation strategy.
+5. REDESIGN_SUMMARY.md:
+   - Frontend redesign notes and status.
+6. Script-level operational documentation in run.bat/run.sh.
+
+4.11 Results and Discussion (If applicable)
+Results:
+1. A functional offline LMS was successfully implemented.
+2. Multi-role access (student/teacher/admin) is operational.
+3. Core academic workflows are integrated into one platform.
+4. Extended LMS features (discussions, reviews, batches, live classes, certificates) are implemented in the enhanced model.
+5. A migration-ready advanced architecture is included for future enhancement.
+
+Discussion:
+- The system demonstrates that robust LMS functionality can be delivered without cloud dependency, making it relevant for bandwidth-limited academic settings.
+- The inclusion of both immediate-use and future-ready architecture in one codebase is a strong strategic design choice.
+- The project provides high educational and operational value but still requires hardening for open internet production.
+- The practical design balances simplicity (SQLite + Flask monolith) with extensibility (Frappe-complete model route).
+
+
+Chapter Five: Conclusion & Recommendations
+
+5.1 Conclusion
+This project achieved its primary objective of delivering a comprehensive, offline-capable Learning Management System for a Faculty of Computing environment. The developed application integrates student learning, instructor content management, assessment workflows, and administrative governance in a single unified system.
+
+Major accomplishments include:
+1. Role-based access control and dashboard segmentation.
+2. End-to-end course, lesson, quiz, and assignment functionality.
+3. Progress tracking, discussion, review, batch, and certificate features.
+4. Clear deployment pathway for local/offline environments.
+5. Structured expansion route via Frappe-compatible architecture.
+
+Therefore, the system is suitable as a practical institutional LMS prototype and can support real operational use in controlled environments.
+
+5.2 Recommendation
+To maximize impact and sustainability, the following recommendations are made:
+1. Security hardening:
+   - Implement password hashing (e.g., werkzeug.security), CSRF protection, stronger secret management, and optional MFA.
+2. Automated testing:
+   - Add unit, integration, and regression test suites to improve reliability during feature growth.
+3. Database scaling:
+   - Migrate from SQLite to PostgreSQL/MySQL for high concurrent multi-user deployment.
+4. Observability:
+   - Add structured logging, audit trails, and health monitoring dashboards.
+5. Content tooling:
+   - Improve rich content authoring and media processing workflows.
+6. API standardization:
+   - Expand REST API coverage and formalize API documentation.
+7. DevOps readiness:
+   - Add production-grade WSGI deployment configuration and backup automation.
+8. Accessibility and UX:
+   - Conduct formal usability studies and improve accessibility compliance.
+9. Institutional integration:
+   - Integrate student information systems and examination policy modules where needed.
+10. Governance:
+   - Establish release/version policy to manage dual architecture tracks.
+
+5.3 Contribution to Knowledge
+This work contributes to knowledge and practice in the following ways:
+1. Demonstrates a viable offline-first LMS design for resource-constrained contexts.
+2. Provides a concrete reference implementation of role-based educational workflow integration using Flask and SQLAlchemy.
+3. Shows a hybrid evolution pattern where a working monolithic deployment coexists with migration-ready advanced schema/API architecture.
+4. Supplies reproducible seed-data and setup scripts suitable for academic demonstration and teaching.
+5. Offers implementation insights for balancing simplicity, maintainability, and future scalability in educational software engineering projects.
+
+
+References (APA 7)
+
+Armin Ronacher and Flask Contributors. (2024). Flask documentation. Pallets Projects. https://flask.palletsprojects.com/
+
+Pallets Projects. (2024). Werkzeug documentation. https://werkzeug.palletsprojects.com/
+
+SQLAlchemy authors and contributors. (2024). SQLAlchemy documentation. https://docs.sqlalchemy.org/
+
+Python Software Foundation. (2024). Python language reference. https://docs.python.org/3/
+
+Jinja Contributors. (2024). Jinja documentation. https://jinja.palletsprojects.com/
+
+SQLite Consortium. (2024). SQLite documentation. https://www.sqlite.org/docs.html
+
+Bootstrap Team. (2024). Bootstrap documentation. https://getbootstrap.com/docs/
+
+Tailwind Labs. (2024). Tailwind CSS documentation. https://tailwindcss.com/docs
+
+Project source repository artifacts. (2026). E-Learning Portal using Flask: Project code and documentation files (README.md, QUICK_START.md, PROJECT_SUMMARY.md, FRAPPE_LMS_MIGRATION_GUIDE.md, REDESIGN_SUMMARY.md, main_enhanced.py, models.py, init_db.py, main_frappe.py, routes_frappe_complete.py).
+
+
+Appendix
+
+Appendix A: Data collection instrument
+
+A1. Stakeholder Interview Guide (Semi-structured)
+Target respondents:
+- Students
+- Instructors
+- Department/Admin staff
+
+Section I: Background
+1. What is your role in teaching/learning activities?
+2. How often do you interact with digital learning tools?
+
+Section II: Existing system pain points
+3. What are the major challenges in your current teaching/learning process?
+4. How do you currently distribute/receive assignments and course materials?
+5. How do you currently track learning progress?
+
+Section III: Functional requirement elicitation
+6. Which features are essential in an LMS for your role?
+7. How important are quiz auto-grading and assignment feedback tools?
+8. Do you need discussion forums and live session scheduling?
+
+Section IV: Non-functional requirement elicitation
+9. How important is offline access?
+10. What response speed do you consider acceptable?
+11. Which security/privacy concerns matter most to you?
+
+Section V: Evaluation of proposed system
+12. Is the dashboard easy to understand?
+13. Are role permissions appropriate and clear?
+14. What improvements do you recommend?
+
+A2. Observation Checklist
+- User can log in and access role-specific dashboard.
+- Student can browse and enroll in a course.
+- Student can view lesson and mark it complete.
+- Student can start and submit a quiz.
+- Student can submit assignment with/without file.
+- Teacher can create and manage courses.
+- Teacher can grade submissions and issue certificates.
+- Admin can view system statistics and manage users/courses.
+- Error messages are clear for invalid actions.
+- File upload constraints are enforced.
+
+A3. User Questionnaire (Likert 1-5)
+Instruction: Rate each statement from 1 (Strongly Disagree) to 5 (Strongly Agree).
+1. The system is easy to navigate.
+2. The dashboard clearly shows relevant information.
+3. Course enrollment is straightforward.
+4. The quiz workflow is simple and understandable.
+5. Assignment submission/grading process is efficient.
+6. The platform responds quickly to actions.
+7. I trust the correctness of progress and score records.
+8. The system improves teaching and learning effectiveness.
+9. Offline capability is valuable for my environment.
+10. I would recommend this system for faculty-wide deployment.
+
+A4. Functional Test Case Template
+- Test ID:
+- Module:
+- Precondition:
+- Test steps:
+- Expected result:
+- Actual result:
+- Status (Pass/Fail):
+- Remarks:
+
+A5. Sample role-based test scenarios
+1. Student Enrollment Flow
+   - Preconditions: student account exists, published course available.
+   - Steps: login -> browse courses -> enroll -> open course content.
+   - Expected: enrollment success message and content access granted.
+2. Teacher Assessment Flow
+   - Preconditions: teacher owns a course.
+   - Steps: create quiz -> add question/options -> student attempt -> submit -> view result.
+   - Expected: score computed and persisted correctly.
+3. Admin Governance Flow
+   - Preconditions: admin account active.
+   - Steps: open admin dashboard -> list users -> edit user role/status.
+   - Expected: updates saved and reflected in dashboard/list.
+
+End of document.
+Chapter Three: Methodology/System Analysis and Design
+
+3.1 Introduction to system analysis
+System analysis is the structured process of studying an existing operational environment, identifying its limitations, extracting user and stakeholder needs, and translating those needs into technical and functional system requirements. In this project, system analysis was used to transform a basic educational web portal into a comprehensive Learning Management System (LMS) suitable for tertiary-level academic use, specifically for a Faculty of Computing context.
+
+The analysis phase for this project focused on the following:
+- Understanding academic workflow actors: administrators, instructors/teachers, and students.
+- Mapping the complete learning lifecycle: course creation, enrollment, lesson consumption, assessment, assignment submission, grading, and certification.
+- Defining constraints: offline-first operation, low infrastructure requirements, and local database persistence.
+- Identifying implementation risks: insecure plain-text password handling, absence of advanced production hardening, and limited automated tests.
+
+From the repository evidence, the system evolved through multiple versions:
+1. A core Flask LMS implementation (main.py).
+2. An improved and expanded implementation (main_enhanced.py + models.py + templates).
+3. A parallel Frappe-LMS-inspired architecture (main_frappe.py, models_frappe_complete.py, routes_frappe_complete.py, init_frappe_lms.py).
+
+Therefore, system analysis in this work was not a one-time static event, but an iterative engineering process that moved from simple CRUD functionality to a richer, role-based learning platform with broader educational features.
+
+3.2 Research methodology(Where applicable)
+The research methodology adopted is a hybrid of Design Science Research (DSR), Rapid Prototyping, and Iterative Incremental Development.
+
+A. Design Science Orientation
+The project is artifact-centric. The “artifact” is the offline LMS software, and the core research question is practical:
+“How can a full-featured, low-cost, maintainable LMS be implemented for local academic environments without requiring cloud dependency or Docker orchestration?”
+
+B. Iterative Development Process
+The implementation reflects iterative cycles:
+- Cycle 1: Build a baseline LMS with core login/course features.
+- Cycle 2: Expand model schema and route logic for quizzes, assignments, and progress tracking.
+- Cycle 3: Integrate advanced academic features such as chapters, batches, live classes, discussions, reviews, and certificate issuance.
+- Cycle 4: Introduce a Frappe-LMS-compatible architecture to evaluate migration strategy and extensibility.
+
+C. Prototype-and-Refine Workflow
+Each cycle includes:
+1. Requirement extraction from expected LMS capabilities.
+2. Schema design in SQLAlchemy models.
+3. Flask route implementation and role-based access restrictions.
+4. Template-level user interface updates.
+5. Seed data initialization (init_db.py / init_frappe_lms.py).
+6. Manual integration testing through realistic role workflows.
+
+D. Evaluation Approach
+Evaluation was mainly empirical and scenario-based:
+- Functional validation with seeded users (admin/teacher/student credentials).
+- Workflow testing across enrollment, quiz, assignment, and dashboard analytics.
+- Data persistence validation via SQLite-backed operations.
+- Usability assessment through multi-template dashboard and module pages.
+
+3.3 Description of the existing system
+Before full enhancement, the existing system can be characterized as a minimal educational portal with limited structural depth. Its likely characteristics included:
+- Basic user registration/login.
+- Course listing and simple enrollment handling.
+- Limited pedagogical tracking and weaker module decomposition.
+
+Repository evidence confirms that the project later needed substantial expansion in:
+- Database schema breadth (moving from basic entities to many interrelated educational entities).
+- Role-specific operations.
+- Learning progression analytics.
+- Richer educational assets and assessment models.
+
+Key shortcomings in the earlier baseline profile include:
+1. Shallow educational structure: limited chapter/lesson hierarchy.
+2. Limited pedagogy support: insufficient mechanisms for batch management, live classes, discussions, and granular assessment tracking.
+3. Weak analytics depth: fewer institutional-level metrics and growth indicators.
+4. Security constraints: non-hashed passwords and development-style configuration.
+5. Scalability limits: mainly local/offline orientation with no production-grade deployment stack integrated.
+
+Thus, the “existing system” served as a functional starter platform but required a full redesign/extension to satisfy realistic institutional LMS requirements.
+
+3.4 The Proposed System
+The proposed system is a comprehensive offline-first, role-based LMS implemented using Flask, SQLAlchemy ORM, Jinja templates, and SQLite persistence. It supports end-to-end academic learning operations for administrators, instructors, and students.
+
+A. Core Design Goals
+- Full local/offline execution (no compulsory internet dependency).
+- Easy setup on standard laptops/desktops.
+- Multi-role operations with access control boundaries.
+- Comprehensive course lifecycle support.
+- Extensible architecture for future migration/integration.
+
+B. Primary Subsystems
+1. Authentication and Session Management
+- User registration and login.
+- Role-based dashboard routing.
+- Session-based identity handling.
+
+2. Course Management
+- Instructor course creation, editing, publishing/unpublishing.
+- Course categorization and metadata (difficulty level, duration, price fields).
+- Content organization via lessons and chapters.
+
+3. Learning Delivery and Progress
+- Student enrollment into courses.
+- Lesson viewing and completion marking.
+- Automatic progress percentage calculation.
+
+4. Assessment Engine
+- Quiz creation (questions/options).
+- Quiz attempts, answer recording, scoring, percentage computation, pass/fail logic.
+- Assignment submission with text and file upload.
+- Instructor grading and feedback workflows.
+
+5. Academic Community Features
+- Course discussions and replies.
+- Course reviews and ratings.
+- Batch management and batch enrollment.
+- Live class scheduling.
+
+6. Credentialing
+- Certificate issuance for qualifying learners.
+- Certificate tracking and access views.
+
+7. Administrative Monitoring
+- System-wide statistics (users, courses, enrollments, growth trends).
+- User and course management operations.
+
+C. Parallel Frappe-LMS-Inspired Expansion
+A second architecture path is included, featuring:
+- Broader schema and API endpoint set.
+- Migration strategy documentation.
+- Parallel application entrypoint for comparative evolution.
+
+This demonstrates architectural foresight and supports future portability or feature parity with enterprise LMS patterns.
+
+3.5 Significance and Challenges of the proposed system
+Significance
+1. Educational accessibility: The system can run in constrained environments where internet quality is poor or unstable.
+2. Institutional autonomy: Departments can host and operate the LMS locally without cloud vendor lock-in.
+3. Pedagogical completeness: Beyond courses, it supports quizzes, assignments, discussions, certificates, and live class scheduling.
+4. Operational simplicity: Setup scripts (run.bat, run.sh) and SQLite reduce deployment complexity.
+5. Research and prototype value: The architecture serves as a foundation for further AI, analytics, and adaptive learning extensions.
+
+Challenges
+1. Security hardening gap:
+- Current logic uses direct password comparison in core routes.
+- Production-grade hashing, CSRF defense, and strict security headers should be implemented.
+
+2. Testing maturity:
+- No dedicated automated test suite is present in repository structure.
+- Quality assurance is predominantly manual/integration-based.
+
+3. Production readiness:
+- Flask development server invocation is used directly.
+- Full production deployment pipeline (gunicorn/uWSGI + reverse proxy + TLS) is not embedded in project.
+
+4. Scalability limitations:
+- SQLite is excellent for small-to-medium local installations but less suitable for very high concurrency.
+
+5. Data governance:
+- Local/offline architecture demands strong backup discipline and storage management by operators.
+
+Despite these challenges, the proposed system remains highly significant for educational institutions prioritizing low-cost deployability and practical function coverage.
+
+3.6 Data Collection
+Data collection in this project was primarily application-centric and requirements-driven, not sensor-driven or external big-data ingestion. It involved collecting and structuring data from user interactions and academic processes.
+
+A. Requirement Data Collection
+Data sources:
+- Existing LMS expectations from faculty workflows.
+- Typical actor needs (admin/instructor/student).
+- Feature benchmark from modern LMS behavior.
+
+Collected requirement categories:
+- User identity and role information.
+- Course metadata and content organization needs.
+- Assessment and grading requirements.
+- Student progress and completion monitoring.
+- Academic communication (discussion/review).
+
+B. Runtime Transactional Data Collection
+At runtime, system collects:
+1. User data: names, emails, account roles, profile bio/picture.
+2. Course data: title, category, description, summary, price, status.
+3. Learning data: lesson progress, completion timestamps, access logs.
+4. Assessment data: quiz attempts, answers, scores, assignment submissions.
+5. Community data: discussion threads, replies, course reviews.
+6. Credential data: certificate records and issuance hashes.
+
+C. Administrative Analytics Data
+Collected metrics include:
+- Total users by category.
+- Course and enrollment volume.
+- Weekly growth trends.
+- Average course ratings.
+- Quiz attempts and lesson completion counts.
+
+These data points directly support monitoring, reporting, and system evaluation.
+
+3.7 Data set Collection (if applicable)
+For this project, dataset collection is applicable in the form of synthetic/seeded operational data generated for initialization, testing, and demonstration.
+
+A. Seed Data Script
+The init_db.py module initializes the database and inserts structured sample entities.
+
+B. Seeded Data Composition (observed)
+- 1 admin user.
+- 2 teacher users.
+- 10 student users.
+- 5 sample courses.
+- Multiple lessons (across Python and Flask examples).
+- Chapters.
+- Batches and batch enrollments.
+- Live classes.
+- Discussion threads and replies.
+- Course reviews.
+- Quizzes, quiz questions/options.
+- Assignments.
+- Enrollments and lesson progress records.
+- Certificates.
+- Announcements.
+
+C. Dataset Utility
+The synthetic dataset supports:
+1. Functional testing of complete LMS workflow.
+2. Demonstration for presentation and stakeholder review.
+3. Manual verification of dashboards and metrics.
+4. Evaluation of role-specific interfaces.
+
+D. Limitations of Dataset
+- Seed data is representative, not institution-scale real-world data.
+- No anonymized production-like historical logs included.
+- Dataset variability remains moderate unless expanded.
+
+3.8 System Design (Structural Design, Database Design and Specification, Interface Design)
+A. Structural Design
+The system follows a layered monolithic web architecture:
+1. Presentation Layer:
+- HTML/Jinja templates in templates/ and templates/frappe_lms/.
+- Role-aware pages (admin, teacher, student dashboards and modules).
+
+2. Application Logic Layer:
+- Flask route handlers in main_enhanced.py and supplementary modules.
+- Decorator-based role/access control.
+- Utility functions (e.g., progress computation).
+
+3. Data Access Layer:
+- SQLAlchemy models and ORM relationships in models.py.
+
+4. Persistence Layer:
+- SQLite database file (elearning.db / learn.db / frappe_lms.db variants depending on entrypoint).
+
+B. Database Design and Specification
+The primary schema includes interrelated entities such as:
+- User
+- Course
+- Enrollment
+- Lesson
+- Lesson_Progress
+- Lesson_Resource
+- Quiz
+- Quiz_Question
+- Quiz_Option
+- Quiz_Attempt
+- Quiz_Answer
+- Assignment
+- Assignment_Submission
+- Announcement
+- Chapter
+- Batch
+- BatchEnrollment
+- Certificate
+- Discussion
+- DiscussionReply
+- CourseReview
+- LiveClass
+
+Key design characteristics:
+1. Referential integrity via foreign keys.
+2. Relationship mapping with backrefs and cascading delete behavior.
+3. Composite uniqueness constraints where necessary (e.g., unique student-course enrollment, unique course-student review).
+4. Timestamped records for traceability and analytics.
+
+C. Interface Design
+Interface design uses server-side rendered templates with clear workflow segmentation:
+- Public pages: landing/index, login, register.
+- Student pages: dashboard, course content, lesson, quiz, assignment, certificates.
+- Teacher pages: dashboard, create/edit course, quiz/assignment management, grading, batch management.
+- Admin pages: dashboard with institutional statistics, user/course management.
+- Community pages: discussions, review pages.
+
+UI design reflects practical usability priorities:
+- Navigation clarity.
+- Role-based menu adaptation.
+- Form-driven CRUD interaction.
+- Flash messaging for operation feedback.
+
+3.9 Design methodology (Materials and Method)
+A. Materials
+Software materials:
+- Python 3.8+ runtime.
+- Flask 3.x framework.
+- Flask-SQLAlchemy ORM.
+- Flask-Mail (for email infrastructure in one app path).
+- Werkzeug utilities.
+- SQLite DB engine.
+- Jinja2 templates.
+- Bootstrap/Tailwind-driven styling depending on template variant.
+
+Hardware materials (minimum practical):
+- Standard laptop/desktop.
+- 2GB RAM or higher.
+- ~500MB+ storage (excluding uploaded instructional media growth).
+
+B. Method
+1. Requirement elicitation from core LMS actor needs.
+2. Entity-relationship design for normalized educational data model.
+3. Incremental route implementation with role-specific decorators.
+4. UI template extension for each functional module.
+5. Seed data generation for realistic functional traversal.
+6. Iterative debugging and manual scenario testing.
+7. Documentation and migration guidance generation.
+
+C. Engineering Approach
+The methodology aligns with “build-verify-refine”:
+- Build a feature slice (e.g., course enrollment).
+- Verify with seeded test users.
+- Refine schema/UI/logic.
+- Extend to adjacent features (assessment, grading, certification, analytics).
+
+3.10 System architecture
+The architecture can be represented conceptually as follows:
+
+Client (Browser)
+-> Flask Routes (Application Controller Layer)
+-> Business Logic + Utility Methods
+-> SQLAlchemy ORM
+-> SQLite Database
+
+Supplementary Services:
+- File storage subsystem (uploads folder for profile images, lesson videos, assignment files).
+- Optional email subsystem (configured in main.py path).
+
+Architectural qualities:
+1. Cohesion: Functional modules are grouped logically by actor and educational workflow.
+2. Extensibility: New modules can be integrated by extending models/routes/templates.
+3. Maintainability: Separation of concerns is moderate, though further blueprint modularization could improve large-scale maintainability.
+4. Portability: Runs on Windows/Linux/Mac with minimal setup overhead.
+
+Alternative/parallel architecture present:
+- Frappe-inspired branch introduces richer API-oriented routes and expanded model granularity.
+- Enables migration path and comparative architecture evolution.
+
+3.11 System UML implementation
+Although formal UML diagram files are not explicitly included in the repository, UML-aligned implementation is inferable from the class and route design.
+
+A. Use Case Model (textual)
+Actors:
+1. Student
+2. Teacher/Instructor
+3. Admin
+
+Major student use cases:
+- Register/Login
+- Browse course catalog
+- Enroll in course
+- Consume lessons
+- Attempt quizzes
+- Submit assignments
+- Participate in discussions
+- Review courses
+- View certificates
+
+Major teacher use cases:
+- Create/edit/publish course
+- Add chapter and lessons
+- Create quizzes and questions
+- Create assignments
+- Grade submissions
+- Manage batches and live classes
+- Issue certificates
+
+Major admin use cases:
+- Manage users
+- Manage courses
+- View system analytics
+- Monitor growth and activity
+
+B. Class Model (textual)
+Core classes map directly to SQLAlchemy models:
+- User <-> Enrollment <-> Course
+- Course <-> Lesson, Chapter, Quiz, Assignment, Review, Discussion
+- Quiz <-> Quiz_Question <-> Quiz_Option; Quiz_Attempt <-> Quiz_Answer
+- Assignment <-> Assignment_Submission
+- Batch <-> BatchEnrollment <-> LiveClass
+- Course/Student <-> Certificate
+
+C. Activity Flow Model (textual examples)
+Student learning activity:
+Login -> Dashboard -> Enroll -> Access lesson -> Mark complete -> Take quiz -> Submit assignment -> Receive grade -> Earn certificate
+
+Teacher content activity:
+Login -> Create course -> Add chapters/lessons -> Add quiz/assignment -> Publish -> Monitor students -> Grade submissions -> Issue certificates
+
+Admin monitoring activity:
+Login -> Dashboard analytics -> Review users/courses -> Perform management actions
+
+3.12  Performance Evaluation Metrics (if applicable)
+Performance metrics in this project are predominantly functional and operational rather than benchmark-heavy throughput metrics.
+
+A. Functional Metrics
+1. Feature completion coverage:
+- Authentication module implemented.
+- Course lifecycle module implemented.
+- Assessment module implemented.
+- Assignment grading module implemented.
+- Certificate module implemented.
+- Discussion/review module implemented.
+- Batch/live class module implemented.
+
+2. Workflow success metrics:
+- Successful enrollment transactions.
+- Lesson completion updates.
+- Quiz submission and score computation integrity.
+- Assignment submission and grading persistence.
+
+B. Administrative Metrics (Built into Dashboard)
+- Total users, students, teachers.
+- Total courses and enrollments.
+- Weekly growth rates.
+- Quiz attempts and lesson completion count.
+- Average course rating.
+
+C. System Behavior Metrics (practical)
+- Startup reliability (database creation + optional seed load).
+- Data consistency under CRUD operations.
+- Response feasibility for local institutional deployment.
+
+D. Potential advanced metrics for future evaluation
+- Average response time per route category.
+- Concurrent user handling under load.
+- Storage growth behavior with media uploads.
+- Security incident surface reduction after hardening updates.
+
+
+Chapter Four: System Implementation And Testing
+
+4.1 Introduction
+This chapter explains how the proposed LMS was implemented, configured, and tested. The implementation follows a practical monolithic web architecture with a strong focus on local/offline operation, role-based educational workflows, and manageable deployment complexity.
+
+The chapter covers:
+- Programming languages and framework choices.
+- Requirement realization at code level.
+- Deployment behavior and startup scripts.
+- Testing approach and observed results.
+
+4.2 Language Implementation
+Primary implementation language is Python, with Flask used for web application routing, request handling, and template rendering. SQLAlchemy handles object-relational mapping and schema relationships.
+
+Implementation mapping:
+- Route/controller logic: main_enhanced.py (plus alternate entrypoints main.py and main_frappe.py).
+- Data model layer: models.py (and models_frappe_complete.py for expanded parallel architecture).
+- Initialization/seeding scripts: init_db.py and init_frappe_lms.py.
+- UI layer: Jinja/HTML templates in templates directories.
+- Automation scripts: run.bat and run.sh for setup and launch.
+
+Data operations are implemented with SQLAlchemy sessions:
+- Create operations through session add/commit.
+- Read operations via query/filter/join/paginate patterns.
+- Update/delete with transaction rollback handling on exceptions.
+
+File handling is implemented with Werkzeug secure_filename and a configured uploads directory with extension checks and maximum size control.
+
+4.3 Choice of Programming Language
+Python was selected due to:
+1. High developer productivity for rapid academic project delivery.
+2. Strong ecosystem for web development, ORM, and educational prototypes.
+3. Low barrier to maintenance and readability for student teams.
+4. Broad support in local/offline setups.
+
+Flask was chosen due to:
+- Lightweight and flexible architecture.
+- Easy route-based feature expansion.
+- Seamless integration with Jinja and SQLAlchemy.
+- Suitability for iterative and educational software prototyping.
+
+4.4 Language justification
+The language and framework choices are justified by the project’s constraints and goals:
+
+A. Constraint alignment
+- Requirement: easy deployment on local machines.
+- Python + Flask + SQLite satisfies this with minimal external dependencies.
+
+B. Educational maintainability
+- Code readability is high, making handover and future student contribution easier.
+
+C. Feature fit
+- Flask handles session-based authentication, role branching, and module-level route decomposition effectively.
+
+D. Development velocity
+- Large functional surface (quizzes, assignments, certificate issuance, analytics) can be implemented quickly compared with more rigid frameworks.
+
+E. Extensibility
+- Presence of a parallel Frappe-inspired architecture demonstrates language/framework flexibility for migration-scale evolution.
+
+4.5 Requirement Specification (Functional and Non functional Requirements)
+A. Functional Requirements
+1. User management:
+- Register users.
+- Authenticate users by role.
+- Profile viewing/updating.
+
+2. Course management:
+- Instructors create/edit/publish courses.
+- Students browse and view course details.
+- Students enroll in courses.
+
+3. Lesson and progress:
+- Course lessons viewable after enrollment.
+- Lesson completion tracking and progress percentage computation.
+
+4. Assessment:
+- Instructors create quizzes/questions/options.
+- Students attempt quizzes.
+- Automatic grading for objective questions.
+
+5. Assignment workflow:
+- Assignment creation by instructors.
+- Submission by students (text and file).
+- Grading and feedback by instructors.
+
+6. Academic collaboration:
+- Discussion creation and replies.
+- Course reviews and ratings.
+
+7. Batch and live sessions:
+- Batch creation and enrollment.
+- Live class scheduling and visibility.
+
+8. Certification:
+- Certificate issuance based on completion threshold.
+- Certificate retrieval/viewing.
+
+9. Administration:
+- User/course management.
+- Dashboard statistics and growth tracking.
+
+B. Non-functional Requirements
+1. Usability:
+- Role-specific navigational clarity.
+- Responsive and understandable interface flow.
+
+2. Performance:
+- Acceptable response for local multi-user educational usage.
+
+3. Reliability:
+- Persistent local storage and transaction commit/rollback handling.
+
+4. Security (current + needed):
+- Session-based access control implemented.
+- Further hardening needed: hashed passwords, CSRF, production keys.
+
+5. Portability:
+- Works across Windows/Linux/Mac with Python runtime.
+
+6. Maintainability:
+- Modular model entities and separated template files.
+
+4.6 System Implementation and Deployment
+A. Implementation Overview
+The system is implemented as a Flask application with:
+- App configuration (database URI, upload paths, limits).
+- Decorator-based role access control.
+- Route groups for student, teacher, and admin operations.
+- ORM-backed models and relationships.
+- HTML templates for each use case.
+
+B. Deployment Pattern
+Current deployment model is local/dev-style deployment:
+1. Create virtual environment.
+2. Install requirements.
+3. Initialize database (init_db.py).
+4. Run Flask app entrypoint (main_enhanced.py).
+
+C. Automated launch support
+- run.bat for Windows.
+- run.sh for Linux/macOS.
+
+These scripts perform:
+- Python existence checks.
+- venv creation/activation.
+- dependency installation.
+- conditional DB initialization.
+- application startup.
+
+D. Alternate deployment paths
+- main.py path includes mail and stripe config stubs.
+- main_frappe.py path introduces a parallel architecture on separate database.
+
+4.7 System requirement
+A. Software Requirements
+- Python 3.8 or above.
+- pip package manager.
+- Flask and related dependencies (from requirements.txt):
+  Flask, Flask-SQLAlchemy, Flask-Mail, Flask-Login, Werkzeug, python-dotenv, Pillow, PyYAML, requests, PyPDF2.
+
+B. Hardware Requirements
+Minimum:
+- 2GB RAM.
+- 500MB disk (plus media/upload growth).
+- Standard CPU for local usage.
+
+Recommended for smoother operation:
+- 4GB+ RAM.
+- SSD storage for faster I/O.
+
+C. Network Requirement
+- Not mandatory for core usage due to offline-first design.
+- Internet only needed for package installation or optional external integrations.
+
+4.8 System Evaluation
+System evaluation was based on end-to-end functional scenarios and repository-supported execution behavior.
+
+A. Scenario Evaluation
+1. Student scenario:
+- Login -> browse courses -> enroll -> consume lesson -> submit quiz/assignment -> review progress/certificates.
+
+2. Teacher scenario:
+- Login -> create and manage course -> add lessons/quizzes/assignments -> grade submissions -> issue certificates.
+
+3. Admin scenario:
+- Login -> monitor stats -> manage users/courses.
+
+B. Evaluation outcomes (observed from implementation)
+- Core workflows are implemented and interconnected.
+- Data relationships support educational traceability.
+- Dashboard-level metrics offer institutional visibility.
+- Seed data supports realistic demonstration and validation.
+
+C. Evaluation constraints
+- Automated test suite absent.
+- Security controls are not yet production hardened.
+- Performance load benchmarks not formalized.
+
+4.9 Software development and testing tools (if applicable)
+A. Development Tools
+- Python interpreter.
+- Flask framework.
+- SQLAlchemy ORM.
+- Jinja templating.
+- SQLite engine.
+- Terminal scripts (Batch/Bash) for setup automation.
+
+B. Data/Initialization Tools
+- init_db.py for seeded baseline LMS data.
+- init_frappe_lms.py for expanded Frappe-like setup path.
+
+C. Testing Approach Tools
+- Manual browser testing with seeded credentials.
+- Route-level and workflow-level verification via application UI and server behavior.
+
+D. Optional external tools for future maturity
+- pytest for automated unit/integration tests.
+- coverage.py for test coverage reporting.
+- locust/JMeter for load profiling.
+- bandit or similar for Python security static checks.
+
+4.10 System Testing and Documentation
+A. Testing Types Applied
+1. Manual Functional Testing
+- Verified route access by role.
+- Verified CRUD operations across users/courses/content.
+
+2. Integration Testing (manual)
+- Confirmed interactions between model relations and route operations.
+- Confirmed template rendering with dynamic query outputs.
+
+3. Data Persistence Testing
+- Verified commits/rollbacks and persisted records in SQLite.
+
+4. Access Control Testing
+- Decorators enforce student/teacher/admin boundaries.
+
+B. Key Tested Modules
+- Registration/login/logout.
+- Dashboard routing.
+- Enrollment flow.
+- Lesson progress flow.
+- Quiz attempt/submission/scoring.
+- Assignment submission/grading.
+- Discussion and review posting.
+- Certificate issuance.
+- Admin analytics.
+
+C. Documentation Assets in Repository
+- README.md (general project guidance).
+- QUICK_START.md (rapid setup and usage).
+- PROJECT_SUMMARY.md (transformation summary).
+- FRAPPE_LMS_MIGRATION_GUIDE.md (migration strategies and architecture options).
+- REDESIGN_SUMMARY.md (UI redesign notes).
+
+D. Documentation quality observation
+The project has useful operational and migration documentation, though formal technical artifacts (e.g., ERD/UML diagrams and automated test reports) can still be expanded for academic rigor.
+
+4.11 Results and Discussion (If applicable)
+A. Results
+1. A fully operational offline LMS prototype/application was achieved.
+2. Multi-role actor workflows are implemented in practical detail.
+3. Rich academic components (quizzes, assignments, discussions, reviews, certificates, batches, live classes) are integrated.
+4. Administrative analytics and growth metrics were added.
+5. Project includes an advanced migration-ready architecture path.
+
+B. Discussion
+The system demonstrates that a robust institutional LMS can be developed with lightweight technologies under constrained infrastructure assumptions. This is particularly valuable in contexts where cloud dependency, licensing cost, or internet reliability is problematic.
+
+The inclusion of both an enhanced implementation and a Frappe-inspired parallel architecture is a notable strength, showing forward-thinking design beyond minimum project completion.
+
+However, the project’s current state is best described as a strong production-capable prototype rather than fully hardened enterprise release. Security enhancements, automated testing, and deployment hardening remain necessary for high-risk production environments.
+
+C. Practical Implication
+For departmental deployment, the current implementation can already support instruction, student progression, and academic assessment workflows, provided operational safeguards (backup and access discipline) are maintained.
+
+
+Chapter Five: Conclusion & Recommendations
+
+5.1 Conclusion
+This project successfully designs and implements a comprehensive offline-first E-Learning Portal using Flask. The implemented system goes beyond a simple course listing platform and provides a complete educational workflow including authentication, role-based dashboards, course authoring, enrollment, lesson progression, assessment, assignment management, collaboration features, and certification.
+
+From a systems perspective, the project achieves strong functional completeness for an academic LMS in a low-complexity deployment model. The use of Python, Flask, SQLAlchemy, and SQLite supports maintainability, readability, and practical institutional adoption.
+
+Furthermore, the repository’s inclusion of migration-oriented architecture (Frappe-inspired models/routes) indicates strategic extensibility and architectural maturity. This increases the project’s long-term relevance beyond immediate demonstration.
+
+In summary, the project meets its central objective: delivering a practical, feature-rich LMS suited for educational environments with limited infrastructure and a preference for offline/local execution.
+
+5.2 Recommendation
+To improve the system for institutional-scale or long-term deployment, the following recommendations are made:
+
+1. Security hardening (highest priority)
+- Replace plain-text password handling with secure hashing (e.g., werkzeug.security).
+- Implement CSRF protection and stricter session policies.
+- Externalize and rotate secret keys/environment configs.
+
+2. Testing modernization
+- Add automated tests (unit, integration, regression) using pytest.
+- Create CI-based test execution and quality gates.
+
+3. Deployment hardening
+- Use production WSGI server and reverse proxy (gunicorn + nginx or equivalent).
+- Enable HTTPS/TLS and structured logging.
+
+4. Data and backup governance
+- Introduce scheduled backup/restore scripts.
+- Add audit logging for key administrative actions.
+
+5. Scalability roadmap
+- Migrate to PostgreSQL/MySQL for larger concurrency needs.
+- Introduce caching for analytics-heavy pages if needed.
+
+6. UX and accessibility improvements
+- Standardize modern template system across all pages.
+- Improve accessibility compliance (contrast, labels, keyboard navigation).
+
+7. Analytics and reporting
+- Add downloadable reports (student progress, course completion, grading trends).
+- Include cohort/batch-level analytics and retention indicators.
+
+8. Institutional integration options
+- Optional integration with SSO/LDAP or school information systems.
+- Add email/SMS notification channels where network permits.
+
+5.3 Contribution to Knowledge
+This project contributes to knowledge and practice in multiple ways:
+
+1. Demonstrates viability of offline-first LMS architecture
+It shows that a broad LMS feature set can be implemented without cloud-native complexity, supporting education in low-resource contexts.
+
+2. Provides a practical reference implementation
+The repository includes implementable components for core LMS modules, making it reusable for similar institutions and student research projects.
+
+3. Illustrates iterative system evolution
+The transition from baseline Flask implementation to enhanced modular design and migration-ready architecture provides a concrete case study in iterative software engineering.
+
+4. Extends pedagogical system modeling in local context
+It contextualizes modern LMS requirements (assessment, collaboration, certification, analytics) within a deployable local architecture.
+
+5. Bridges educational software engineering and system design pedagogy
+The project can be used as teaching material for database design, web engineering, requirement analysis, and role-based information systems.
+
+
+References (APA 7)
+
+Arlow, J., & Neustadt, I. (2005). UML 2 and the unified process: Practical object-oriented analysis and design. Addison-Wesley.
+
+Boehm, B. W. (1988). A spiral model of software development and enhancement. Computer, 21(5), 61-72. https://doi.org/10.1109/2.59
+
+Fielding, R. T. (2000). Architectural styles and the design of network-based software architectures (Doctoral dissertation, University of California, Irvine).
+
+Flask Documentation Team. (2026). Flask documentation. Pallets Projects. https://flask.palletsprojects.com/
+
+Gamma, E., Helm, R., Johnson, R., & Vlissides, J. (1994). Design patterns: Elements of reusable object-oriented software. Addison-Wesley.
+
+Martin, R. C. (2009). Clean code: A handbook of agile software craftsmanship. Prentice Hall.
+
+Pallets Projects. (2026). Werkzeug documentation. https://werkzeug.palletsprojects.com/
+
+Pressman, R. S., & Maxim, B. R. (2019). Software engineering: A practitioner’s approach (9th ed.). McGraw-Hill.
+
+Sommerville, I. (2016). Software engineering (10th ed.). Pearson.
+
+SQLAlchemy Authors. (2026). SQLAlchemy 2.0 documentation. https://docs.sqlalchemy.org/
+
+W3C. (2018). Web content accessibility guidelines (WCAG) 2.1. https://www.w3.org/TR/WCAG21/
+
+
+Appendix
+
+Appendix A: Representative Modules
+- main_enhanced.py: primary enhanced Flask application.
+- models.py: SQLAlchemy entity definitions and relationships.
+- init_db.py: full sample data initialization.
+- run.bat / run.sh: one-click setup and launch scripts.
+- main_frappe.py + routes_frappe_complete.py: migration/parallel architecture path.
+
+Appendix B: Sample Role Credentials (from seed data)
+- Admin: admin@elearning.local / admin123
+- Teacher: john.smith@faculty.local / teacher123
+- Student: student1@faculty.local / student123
+
+Appendix C: Key Functional Endpoints (representative)
+- Authentication: /register, /login, /logout
+- Student: /student/dashboard, /student/browse-courses
+- Course flow: /course/<id>, /course/<id>/enroll, /course/<id>/content
+- Lesson flow: /lesson/<id>, /lesson/<id>/mark-complete
+- Quiz flow: /quiz/<id>, /quiz/<id>/take, /quiz/.../submit
+- Assignment flow: /assignment/<id>, /assignment/<id>/submit
+- Teacher: /teacher/dashboard, /teacher/course/create, /teacher/.../manage
+- Admin: /admin/dashboard, /admin/users, /admin/courses
+
+Appendix D: Known Improvement Backlog
+1. Replace plain password storage with hash+salt.
+2. Add CSRF and stricter validation.
+3. Implement automated tests and CI.
+4. Improve production deployment template.
+5. Expand reporting and audit logs.
+
+
+Data collection instrument
+
+Instrument Title: LMS Requirements and Workflow Validation Checklist
+
+Section A: Stakeholder Profile
+1. Role: Admin / Teacher / Student
+2. Department/Program
+3. Prior LMS exposure level (None/Low/Moderate/High)
+
+Section B: Functional Need Rating (1-5)
+1. Account registration/login
+2. Course creation and editing
+3. Course enrollment process
+4. Lesson navigation and completion tracking
+5. Quiz attempt and result transparency
+6. Assignment submission and grading feedback
+7. Discussion and peer support
+8. Certificate issuance and verification
+9. Dashboard analytics relevance
+
+Section C: Usability Assessment
+1. Interface clarity (1-5)
+2. Navigation simplicity (1-5)
+3. Error feedback adequacy (1-5)
+4. Mobile/tablet usability (1-5)
+
+Section D: Performance and Reliability
+1. Perceived page response speed (1-5)
+2. Stability during normal use (1-5)
+3. Consistency of saved data (1-5)
+
+Section E: Open-ended Questions
+1. Which module is most useful and why?
+2. Which module is hardest to use and why?
+3. What additional feature should be added?
+4. What concerns exist around privacy/security?
+
+Section F: Validation Outcome
+- Overall acceptance status: Accept / Accept with changes / Reject
+- Required changes before deployment:
+  a) ________________________
+  b) ________________________
+  c) ________________________
+
+End of Instrument

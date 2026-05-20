@@ -1,0 +1,74 @@
+{% extends "frappe_lms/base.html" %}
+{% block title %}Payment — {{ course.title }} — FCLS{% endblock %}
+{% block content %}
+
+<div class="max-w-lg mx-auto py-8">
+    <div class="bg-white rounded-2xl shadow-sm border border-surface-100 overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-brand-600 to-brand-500 px-7 py-6 text-white">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                    <i class="fas fa-lock text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold">Complete Payment</h1>
+                    <p class="text-brand-100 text-xs">Secure checkout via Paystack</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="px-7 py-6">
+            <h2 class="text-sm font-bold text-surface-900 mb-4 uppercase tracking-wider">Order Summary</h2>
+
+            <div class="flex items-start gap-4 p-4 bg-surface-50 rounded-xl mb-6">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center flex-shrink-0">
+                    <span class="text-white text-lg font-bold">{{ course.title[:1] }}</span>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-surface-900 text-sm">{{ course.title }}</h3>
+                    <p class="text-xs text-surface-800/50 mt-0.5">{{ course.short_introduction[:80] }}{% if course.short_introduction|length > 80 %}...{% endif %}</p>
+                    <p class="text-xs text-surface-800/40 mt-1">Instructor: {{ course.instructor_rel.full_name }}</p>
+                </div>
+            </div>
+
+            <div class="space-y-2 mb-6">
+                <div class="flex justify-between text-sm">
+                    <span class="text-surface-800/60">Course Price</span>
+                    <span class="font-semibold text-surface-900">₦{{ "{:,.0f}".format(course.course_price) }}</span>
+                </div>
+                <div class="border-t border-surface-100 pt-2 flex justify-between text-sm">
+                    <span class="font-bold text-surface-900">Total</span>
+                    <span class="text-xl font-extrabold text-brand-600">₦{{ "{:,.0f}".format(course.course_price) }}</span>
+                </div>
+            </div>
+
+            <!-- Pay Button (Demo — links directly to verify) -->
+            <div class="space-y-3">
+                <a href="{{ url_for('verify_payment', ref=payment.transaction_id) }}"
+                   class="block w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold py-3.5 rounded-xl text-center shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all">
+                    <i class="fas fa-credit-card mr-2"></i>Pay ₦{{ "{:,.0f}".format(course.course_price) }} with Paystack
+                </a>
+
+                <p class="text-center text-xs text-surface-800/40">
+                    <i class="fas fa-shield-halved text-emerald-500 mr-1"></i>
+                    Demo mode — clicking pay will simulate a successful payment
+                </p>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-surface-100">
+                <div class="flex items-center justify-between text-xs text-surface-800/40">
+                    <span>Ref: <span class="font-mono">{{ payment.transaction_id }}</span></span>
+                    <span>{{ user.email }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{{ url_for('course_detail', slug=course.slug) }}" class="text-sm text-surface-800/50 hover:text-brand-600 transition">
+            <i class="fas fa-arrow-left mr-1"></i> Cancel and go back
+        </a>
+    </div>
+</div>
+{% endblock %}

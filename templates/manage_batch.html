@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900">Manage Batch</h1>
+            <p class="text-lg text-gray-600">{{ batch.title }}</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Content -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="bg-white rounded-lg shadow p-6 text-center">
+                        <p class="text-3xl font-bold text-blue-600">{{ enrollments | length }}</p>
+                        <p class="text-gray-600 text-sm mt-2">Students</p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6 text-center">
+                        <p class="text-3xl font-bold text-green-600">{{ live_classes | length }}</p>
+                        <p class="text-gray-600 text-sm mt-2">Live Classes</p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6 text-center">
+                        <p class="text-3xl font-bold text-purple-600">{{ (enrollments | map(attribute='progress_percentage') | sum / enrollments | length) | int if enrollments else 0 }}%</p>
+                        <p class="text-gray-600 text-sm mt-2">Avg Progress</p>
+                    </div>
+                </div>
+
+                <!-- Enrolled Students -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Enrolled Students</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-gray-100 border-b">
+                                <tr>
+                                    <th class="text-left px-4 py-2 font-semibold">Name</th>
+                                    <th class="text-left px-4 py-2 font-semibold">Progress</th>
+                                    <th class="text-left px-4 py-2 font-semibold">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for enrollment in enrollments %}
+                                <tr class="border-b hover:bg-gray-50">
+                                    <td class="px-4 py-3">{{ enrollment.student_rel.first_name }} {{ enrollment.student_rel.last_name }}</td>
+                                    <td class="px-4 py-3">
+                                        <div class="w-24 bg-gray-200 rounded-full h-2">
+                                            <div class="bg-blue-600 h-2 rounded-full" style="width: {{ enrollment.progress_percentage if enrollment.progress_percentage else 0 }}%"></div>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        {% if enrollment.is_completed %}
+                                        <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold">Completed</span>
+                                        {% else %}
+                                        <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-semibold">Ongoing</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-lg p-6 sticky top-24">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Batch Actions</h3>
+                    
+                    <a href="{{ url_for('add_live_class', batch_id=batch.id) }}" 
+                       class="w-full block text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition mb-2">
+                        + Schedule Live Class
+                    </a>
+
+                    <a href="{{ url_for('view_batch', batch_id=batch.id) }}" 
+                       class="w-full block text-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg transition mb-2">
+                        View Batch
+                    </a>
+
+                    <a href="{{ url_for('teacher_dashboard') }}" 
+                       class="w-full block text-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg transition">
+                        Back to Dashboard
+                    </a>
+
+                    <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                        <p class="text-sm text-blue-800">
+                            <strong>Tip:</strong> Use live classes to connect with students in real-time and clarify doubts.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

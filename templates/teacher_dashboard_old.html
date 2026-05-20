@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Teacher Dashboard - E-Learning Portal{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Welcome back, {{ user.first_name }}! 👋</h1>
+            <p class="text-gray-600">Manage your courses and track student progress</p>
+        </div>
+        <a href="{{ url_for('create_course') }}" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+            + Create New Course
+        </a>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-gray-600 text-sm font-medium">Active Courses</h3>
+                <span class="text-2xl">📚</span>
+            </div>
+            <p class="text-3xl font-bold text-gray-900">{{ courses_count | default(0) }}</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-gray-600 text-sm font-medium">Total Students</h3>
+                <span class="text-2xl">👥</span>
+            </div>
+            <p class="text-3xl font-bold text-gray-900">{{ total_students | default(0) }}</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-gray-600 text-sm font-medium">Total Enrollments</h3>
+                <span class="text-2xl">📈</span>
+            </div>
+            <p class="text-3xl font-bold text-gray-900">{{ total_enrollments | default(0) }}</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-gray-600 text-sm font-medium">Avg Completion</h3>
+                <span class="text-2xl">⭐</span>
+            </div>
+            <p class="text-3xl font-bold text-blue-600">{{ avg_completion | default(0) }}%</p>
+        </div>
+    </div>
+
+    <!-- Courses Grid -->
+    <div class="grid grid-cols-1 gap-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Your Courses</h2>
+        
+        {% if courses %}
+            {% for course in courses %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 p-6">
+                    <!-- Course Header -->
+                    <div>
+                        <div class="h-32 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mb-4">
+                            {% if course.image %}
+                                <img src="{{ course.image }}" alt="{{ course.title }}" class="w-full h-full object-cover rounded-lg">
+                            {% else %}
+                                <div class="text-white text-3xl font-bold text-center">{{ course.title[:1] }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Course Details -->
+                    <div class="md:col-span-2">
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">{{ course.title }}</h3>
+                        <p class="text-gray-600 text-sm mb-4">{{ course.summary[:100] if course.summary else 'No description' }}</p>
+                        
+                        <div class="flex flex-wrap gap-4 text-sm text-gray-600">
+                            <div class="flex items-center gap-1">
+                                <span>📚</span>
+                                <span>{{ course.lessons|length }} Lessons</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span>👥</span>
+                                <span>{{ course.enrollments|length }} Students</span>
+                            </div>
+                            <div>
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold" style="background-color: rgba(59, 130, 246, 0.1); color: #2563eb;">
+                                    {% if course.is_published %}Published{% else %}Draft{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex flex-col gap-2 justify-center">
+                        <a href="{{ url_for('view_course', course_id=course.id) }}" class="text-center bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition text-sm">
+                            View Course
+                        </a>
+                        <a href="{{ url_for('edit_course', course_id=course.id) }}" class="text-center bg-gray-200 text-gray-900 py-2 px-4 rounded-lg font-semibold hover:bg-gray-300 transition text-sm">
+                            Edit
+                        </a>
+                        <button onclick="if(confirm('Delete this course?')) window.location='{{ url_for('delete_course', course_id=course.id) }}'" class="text-center bg-red-100 text-red-600 py-2 px-4 rounded-lg font-semibold hover:bg-red-200 transition text-sm">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="bg-white rounded-lg shadow-md p-12 text-center">
+                <p class="text-gray-600 text-lg mb-4">You haven't created any courses yet</p>
+                <a href="{{ url_for('create_course') }}" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                    Create Your First Course
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Broadcast Message Section -->
+    <div class="bg-white rounded-lg shadow-md p-6 mt-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">📢 Broadcast Message</h2>
+        <p class="text-gray-600 text-sm mb-4">Send an announcement to all students across your courses</p>
+        <form method="POST" action="{{ url_for('broadcast_message') }}">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input type="text" name="title" required placeholder="Announcement title..." class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                <textarea name="content" required rows="3" placeholder="Write your message here..." class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition">
+                Send Broadcast
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

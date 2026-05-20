@@ -1,0 +1,84 @@
+{% extends "frappe_lms/base.html" %}
+{% block title %}{{ course.title }} — FCLS{% endblock %}
+{% block content %}
+<div class="mb-6">
+    <a href="{{ url_for('course_detail', slug=course.slug) }}" class="text-brand-600 hover:text-brand-700 text-sm font-semibold"><i class="fas fa-arrow-left mr-1"></i> Back to Course</a>
+</div>
+
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
+    <h1 class="text-2xl font-extrabold text-surface-900">{{ course.title }}</h1>
+    <div class="flex items-center gap-3">
+        <div class="w-48 bg-surface-100 rounded-full h-3">
+            <div class="bg-gradient-to-r from-brand-600 to-brand-400 h-3 rounded-full transition-all" style="width: {{ enrollment.progress|int }}%"></div>
+        </div>
+        <span class="text-sm font-extrabold text-surface-900 font-mono">{{ enrollment.progress|int }}%</span>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <!-- Sidebar -->
+    <div class="lg:col-span-1">
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-5 sticky top-24">
+            <h3 class="font-bold text-xs text-surface-800/40 uppercase tracking-wider mb-3">Chapters</h3>
+            {% for chapter in chapters %}
+            <div class="mb-3">
+                <div class="font-semibold text-sm mb-1.5 text-surface-900">{{ chapter.title }}</div>
+                {% for lesson in chapter.lessons %}
+                <a href="{{ url_for('view_lesson', lesson_id=lesson.id) }}"
+                   class="flex items-center gap-2 py-1.5 px-3 text-sm rounded-lg hover:bg-brand-50 transition-colors {{ 'text-brand-600 font-semibold bg-brand-50/50' if enrollment.current_lesson_id == lesson.id else 'text-surface-800/60' }}">
+                    <i class="fas fa-circle text-[6px] {{ 'text-emerald-500' if enrollment.current_lesson_id and enrollment.current_lesson_id >= lesson.id else 'text-surface-200' }}"></i>
+                    {{ lesson.title }}
+                </a>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="lg:col-span-3">
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-7 mb-6">
+            <h2 class="text-lg font-extrabold text-surface-900 mb-4">Course Overview</h2>
+            <div class="grid grid-cols-3 gap-4 text-center mb-6">
+                <div class="bg-brand-50 rounded-xl p-4">
+                    <div class="text-2xl font-extrabold text-brand-600">{{ chapters|length }}</div>
+                    <div class="text-xs text-surface-800/50">Chapters</div>
+                </div>
+                <div class="bg-emerald-50 rounded-xl p-4">
+                    <div class="text-2xl font-extrabold text-emerald-600">{{ total_lessons }}</div>
+                    <div class="text-xs text-surface-800/50">Lessons</div>
+                </div>
+                <div class="bg-violet-50 rounded-xl p-4">
+                    <div class="text-2xl font-extrabold text-violet-600">{{ enrollment.progress|int }}%</div>
+                    <div class="text-xs text-surface-800/50">Complete</div>
+                </div>
+            </div>
+        </div>
+
+        {% for chapter in chapters %}
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-7 mb-4">
+            <h3 class="font-extrabold text-surface-900 mb-3 flex items-center gap-2">
+                <span class="w-7 h-7 bg-brand-100 text-brand-600 rounded-lg flex items-center justify-center text-xs font-bold">{{ chapter.order + 1 }}</span>
+                {{ chapter.title }}
+            </h3>
+            {% if chapter.description %}
+            <p class="text-surface-800/50 text-sm mb-3">{{ chapter.description }}</p>
+            {% endif %}
+            <div class="space-y-2">
+                {% for lesson in chapter.lessons %}
+                <a href="{{ url_for('view_lesson', lesson_id=lesson.id) }}" class="flex items-center justify-between p-3.5 rounded-xl border border-surface-100 hover:border-brand-200 hover:bg-brand-50/30 transition-all">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-play-circle text-brand-400"></i>
+                        <span class="font-medium text-sm text-surface-800">{{ lesson.title }}</span>
+                    </div>
+                    {% if lesson.duration %}
+                    <span class="text-xs text-surface-800/40 font-mono">{{ lesson.duration }} min</span>
+                    {% endif %}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

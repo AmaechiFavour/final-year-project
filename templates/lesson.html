@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lesson.title }} - E-Learning Portal{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <!-- Sidebar Navigation -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-md p-6 sticky top-20">
+                <h3 class="font-bold text-gray-900 mb-4">Course: {{ lesson.course.title }}</h3>
+                <div class="space-y-2 text-sm">
+                    {% for l in lesson.course.lessons %}
+                    <a href="{{ url_for('view_lesson', lesson_id=l.id) }}" class="block px-3 py-2 rounded {% if l.id == lesson.id %}bg-blue-100 text-blue-600 font-semibold{% else %}hover:bg-gray-50{% endif %}">
+                        {{ l.title }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="lg:col-span-3">
+            <div class="bg-white rounded-lg shadow-md p-8 mb-6">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ lesson.title }}</h1>
+                <p class="text-gray-600 mb-6">{{ lesson.content }}</p>
+
+                {% if lesson.resources %}
+                <div class="bg-blue-50 rounded p-4 mb-6">
+                    <h3 class="font-bold text-gray-900 mb-3">📎 Resources</h3>
+                    <div class="space-y-2">
+                        {% for resource in lesson.resources %}
+                        <a href="{{ resource.file_path }}" class="block text-blue-600 hover:underline">{{ resource.file_name }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{{ url_for('mark_lesson_complete', lesson_id=lesson.id) }}" class="flex gap-4">
+                    <button type="submit" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700">✓ Mark as Complete</button>
+                    <a href="{{ url_for('view_course', course_id=lesson.course_id) }}" class="bg-gray-200 text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300">Back to Course</a>
+                </form>
+            </div>
+
+            <!-- Quiz/Assignment Section (if any) -->
+            {% if lesson.course.quizzes or lesson.course.assignments %}
+            <div class="bg-white rounded-lg shadow-md p-8">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">📋 Assessments</h3>
+                <div class="space-y-4">
+                    {% for quiz in lesson.course.quizzes %}
+                    <div class="border border-gray-200 rounded p-4 flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold text-gray-900">{{ quiz.title }}</h4>
+                            <p class="text-sm text-gray-600">{{ quiz.questions|length }} questions</p>
+                        </div>
+                        <a href="{{ url_for('start_quiz', quiz_id=quiz.id) }}" class="bg-blue-600 text-white px-4 py-2 rounded">Take Quiz</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

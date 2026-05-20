@@ -1,0 +1,55 @@
+{% extends "frappe_lms/base.html" %}
+{% block title %}Batches — FCLS{% endblock %}
+{% block content %}
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+    <div>
+        <h1 class="text-3xl font-extrabold text-surface-900">Batches</h1>
+        <p class="text-surface-800/50 text-sm mt-1">Cohort-based learning groups</p>
+    </div>
+</div>
+
+{% set batch_images = [
+    'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80',
+    'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=600&q=80',
+    'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&q=80',
+    'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&q=80',
+] %}
+
+{% if batches %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+    {% for batch in batches %}
+    <a href="{{ url_for('view_batch', batch_id=batch.id) }}" class="card-hover block group">
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-100 overflow-hidden">
+            <div class="relative h-40 overflow-hidden">
+                <img src="{{ batch_images[loop.index0 % 4] }}" alt="{{ batch.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                <div class="absolute inset-0 bg-gradient-to-t from-surface-900/60 to-transparent"></div>
+                <div class="absolute bottom-3 left-4 right-4">
+                    <h3 class="text-white font-bold text-lg drop-shadow-lg">{{ batch.title }}</h3>
+                    <p class="text-surface-200 text-sm">{{ batch.course_ref.title }}</p>
+                </div>
+            </div>
+            <div class="p-5">
+                {% if batch.description %}
+                <p class="text-surface-800/60 text-sm mb-3 line-clamp-2">{{ batch.description }}</p>
+                {% endif %}
+                <div class="flex justify-between items-center text-xs text-surface-800/40 mb-2">
+                    <span class="flex items-center gap-1"><i class="fas fa-calendar"></i> {{ batch.start_date.strftime('%b %d') }} – {{ batch.end_date.strftime('%b %d, %Y') }}</span>
+                    <span class="px-2 py-0.5 rounded-lg font-medium {{ 'bg-emerald-50 text-emerald-700' if batch.status == 'In Progress' else 'bg-surface-100 text-surface-800/50' }}">{{ batch.status }}</span>
+                </div>
+                {% if batch.paid %}
+                <div class="text-brand-600 font-bold text-sm">${{ batch.batch_price }}</div>
+                {% else %}
+                <div class="text-emerald-600 font-bold text-sm">Free</div>
+                {% endif %}
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-12 text-center">
+    <div class="w-16 h-16 bg-surface-100 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fas fa-users text-2xl text-surface-200"></i></div>
+    <p class="text-surface-800/60 font-semibold">No batches available.</p>
+</div>
+{% endif %}
+{% endblock %}

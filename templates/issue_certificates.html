@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900">Issue Certificates</h1>
+            <p class="text-lg text-gray-600">{{ course.title }}</p>
+        </div>
+
+        <!-- Info -->
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-6 mb-8 rounded">
+            <p class="text-blue-900">
+                <strong>Certificates</strong> are automatically issued to students who have completed 80% or more of the course.
+            </p>
+        </div>
+
+        <!-- Qualified Students -->
+        {% if qualified_students %}
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Qualified Students ({{ qualified_students | length }})</h2>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-100 border-b">
+                        <tr>
+                            <th class="text-left px-4 py-3 font-semibold text-gray-900">Student Name</th>
+                            <th class="text-left px-4 py-3 font-semibold text-gray-900">Email</th>
+                            <th class="text-left px-4 py-3 font-semibold text-gray-900">Progress</th>
+                            <th class="text-left px-4 py-3 font-semibold text-gray-900">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in qualified_students %}
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-4 py-3">{{ item.student.first_name }} {{ item.student.last_name }}</td>
+                            <td class="px-4 py-3">{{ item.student.email }}</td>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-32 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-green-600 h-2 rounded-full" style="width: {{ item.progress }}%"></div>
+                                    </div>
+                                    <span class="text-sm font-semibold text-gray-700">{{ item.progress | int }}%</span>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">Qualified</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Issue Button -->
+            <form method="POST" class="mt-8 pt-6 border-t">
+                <button type="submit" 
+                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition text-lg">
+                    ✓ Issue Certificates to All Qualified Students
+                </button>
+            </form>
+        </div>
+        {% else %}
+        <div class="bg-white rounded-lg shadow-lg p-12 text-center">
+            <svg class="w-24 h-24 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h3 class="text-2xl font-bold text-gray-900">No Qualified Students</h3>
+            <p class="text-gray-600 mt-2">Students need to complete at least 80% of the course to qualify for a certificate.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

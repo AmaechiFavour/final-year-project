@@ -1,0 +1,91 @@
+{% extends "frappe_lms/base.html" %}
+{% block title %}Courses — FCLS{% endblock %}
+{% block content %}
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+    <div>
+        <h1 class="text-3xl font-extrabold text-surface-900">All Courses</h1>
+        <p class="text-surface-800/50 text-sm mt-1">Explore our computing curriculum</p>
+    </div>
+    <form method="GET" class="flex gap-2">
+        <div class="relative">
+            <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-200"></i>
+            <input type="text" name="search" value="{{ search }}" placeholder="Search courses..." class="border border-surface-200 rounded-xl pl-10 pr-4 py-2.5 focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 w-72 text-sm transition-all">
+        </div>
+        <button type="submit" class="bg-gradient-to-r from-brand-600 to-brand-500 text-white px-5 py-2.5 rounded-xl shadow-sm hover:shadow-brand-500/25 transition-all"><i class="fas fa-search text-sm"></i></button>
+    </form>
+</div>
+
+{% if search %}
+<p class="text-surface-800/50 mb-5 text-sm">{{ total }} result{{ 's' if total != 1 }} for "<strong class="text-surface-900">{{ search }}</strong>"</p>
+{% endif %}
+
+{% set course_images = [
+    'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=600&q=80',
+    'https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=600&q=80',
+    'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=600&q=80',
+    'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80',
+    'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&q=80',
+    'https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=600&q=80',
+    'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&q=80',
+    'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&q=80',
+    'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&q=80',
+] %}
+
+{% if courses %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 mb-10">
+    {% for course in courses %}
+    <a href="{{ url_for('course_detail', slug=course.slug) }}" class="card-hover block group">
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-100 overflow-hidden">
+            <div class="relative h-44 overflow-hidden">
+                <img src="{{ course_images[loop.index0 % 9] }}" alt="{{ course.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                <div class="absolute inset-0 bg-gradient-to-t from-surface-900/60 to-transparent"></div>
+                <div class="absolute bottom-3 left-4 right-4">
+                    <h3 class="text-white font-bold text-lg leading-snug drop-shadow-lg">{{ course.title }}</h3>
+                </div>
+                {% if course.paid_course and course.course_price %}
+                <span class="absolute top-3 right-3 bg-brand-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow"><i class="fas fa-lock mr-1"></i>₦{{ "{:,.0f}".format(course.course_price) }}</span>
+                {% else %}
+                <span class="absolute top-3 right-3 bg-emerald-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow">Free</span>
+                {% endif %}
+            </div>
+            <div class="p-5">
+                <p class="text-surface-800/60 text-sm mb-3 line-clamp-2">{{ course.short_introduction }}</p>
+                <div class="flex items-center gap-2 text-xs text-surface-800/40 mb-3">
+                    <span class="flex items-center gap-1"><i class="fas fa-user-tie"></i> {{ course.instructor_rel.full_name }}</span>
+                    {% if course.category %}
+                    <span class="bg-brand-50 text-brand-600 px-2 py-0.5 rounded-md font-medium">{{ course.category }}</span>
+                    {% endif %}
+                </div>
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-1.5">
+                        {% if course.rating %}
+                        <div class="flex text-amber-400 text-xs">{% for i in range(course.rating|int) %}<i class="fas fa-star"></i>{% endfor %}</div>
+                        <span class="text-xs text-surface-800/40">{{ course.rating }}</span>
+                        {% else %}
+                        <span class="text-xs text-surface-800/40">New</span>
+                        {% endif %}
+                    </div>
+                    <span class="text-brand-600 text-sm font-semibold group-hover:translate-x-1 transition-transform">Explore <i class="fas fa-arrow-right text-xs"></i></span>
+                </div>
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+
+{% if pages > 1 %}
+<div class="flex justify-center gap-2">
+    {% for p in range(1, pages + 1) %}
+    <a href="{{ url_for('courses', page=p, search=search) }}"
+       class="px-4 py-2 rounded-xl text-sm font-medium {{ 'bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-500/25' if p == current_page else 'bg-white text-surface-800 border border-surface-200 hover:border-brand-300 hover:bg-brand-50' }} transition-all">{{ p }}</a>
+    {% endfor %}
+</div>
+{% endif %}
+{% else %}
+<div class="text-center py-24 text-surface-800/40">
+    <div class="w-20 h-20 bg-surface-100 rounded-2xl flex items-center justify-center mx-auto mb-4"><i class="fas fa-search text-3xl text-surface-200"></i></div>
+    <p class="text-xl font-semibold text-surface-800/60">No courses found</p>
+    <p class="text-sm mt-1">Try adjusting your search query</p>
+</div>
+{% endif %}
+{% endblock %}

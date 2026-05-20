@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}{{ assignment.title }} - E-Learning Portal{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-lg shadow-md p-8 mb-6">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ assignment.title }}</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded">
+            <div>
+                <p class="text-sm text-gray-600">Due Date</p>
+                <p class="font-bold text-gray-900">{{ assignment.due_date or 'No deadline' }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600">Points</p>
+                <p class="font-bold text-gray-900">{{ assignment.points or 'N/A' }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600">Status</p>
+                <p class="font-bold text-gray-900">
+                    {% if user_submission %}
+                        {% if user_submission.grade %}Graded ({{ user_submission.grade }}/{{ assignment.points }}){% else %}Submitted{% endif %}
+                    {% else %}
+                        Not Submitted
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="border-b border-gray-200 pb-6 mb-6">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">Description</h3>
+            <p class="text-gray-600 whitespace-pre-line">{{ assignment.description }}</p>
+        </div>
+
+        {% if not user_submission or user_submission.status == 'draft' %}
+        <form method="POST" action="{{ url_for('submit_assignment', assignment_id=assignment.id) }}" enctype="multipart/form-data" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Submit Your Work</label>
+                <textarea name="content" placeholder="Type your response here..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-32">{{ user_submission.content if user_submission else '' }}</textarea>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Upload File (Optional)</label>
+                <input type="file" name="file" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <p class="text-xs text-gray-600 mt-1">Allowed formats: PDF, DOC, DOCX, TXT, Images</p>
+            </div>
+
+            <div class="flex gap-4">
+                <button type="submit" name="action" value="submit" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700">Submit Assignment</button>
+                <button type="submit" name="action" value="draft" class="bg-gray-200 text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300">Save as Draft</button>
+            </div>
+        </form>
+        {% elif user_submission and user_submission.grade %}
+        <div class="bg-blue-50 rounded p-6">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">Your Submission</h3>
+            <div class="mb-4">
+                <p class="text-sm text-gray-600">Submitted: {{ user_submission.submitted_at }}</p>
+                <p class="text-sm text-gray-600">Grade: <span class="font-bold text-green-600">{{ user_submission.grade }}/{{ assignment.points }}</span></p>
+            </div>
+            {% if user_submission.feedback %}
+            <div class="bg-white p-4 rounded border border-gray-200">
+                <p class="font-bold text-gray-900 mb-2">Feedback from Instructor:</p>
+                <p class="text-gray-600">{{ user_submission.feedback }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="bg-green-50 rounded p-6">
+            <p class="text-green-800 font-semibold">✓ You have submitted this assignment on {{ user_submission.submitted_at }}</p>
+            <p class="text-sm text-gray-600 mt-2">Awaiting grading from instructor</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

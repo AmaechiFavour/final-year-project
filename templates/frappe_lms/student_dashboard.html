@@ -1,0 +1,260 @@
+{% extends "frappe_lms/base.html" %}
+{% block title %}My Dashboard — FCLS{% endblock %}
+{% block content %}
+<!-- Top Header -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+    <div>
+        <h1 class="text-2xl font-extrabold text-surface-900">Welcome back, {{ user.full_name.split(' ')[0] }}</h1>
+        <p class="text-surface-800/50 text-sm mt-1">Track your learning progress and stay on course</p>
+    </div>
+    <div class="flex gap-3">
+        <a href="{{ url_for('course_registration') }}" class="bg-gradient-to-r from-brand-600 to-brand-500 text-white font-bold py-2.5 px-5 rounded-xl shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 transition-all text-sm">Register Courses</a>
+        <a href="{{ url_for('courses') }}" class="bg-white border border-surface-200 text-surface-800 font-semibold py-2.5 px-5 rounded-xl hover:bg-surface-50 transition text-sm">Browse Courses</a>
+        <a href="{{ url_for('certificates') }}" class="bg-white border border-surface-200 text-surface-800 font-semibold py-2.5 px-5 rounded-xl hover:bg-surface-50 transition text-sm">My Certificates</a>
+    </div>
+</div>
+
+<!-- Stat Cards - Peerup Style -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-5 hover:shadow-md hover:border-brand-200 transition-all">
+        <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                <span class="text-lg">🔥</span>
+            </div>
+        </div>
+        <p class="text-2xl font-extrabold text-surface-900">{{ streak }}</p>
+        <p class="text-xs text-surface-800/50 mt-1">Day Streak</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-5 hover:shadow-md hover:border-brand-200 transition-all">
+        <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 bg-brand-100 rounded-xl flex items-center justify-center">
+                <i class="fas fa-clipboard-check text-brand-600"></i>
+            </div>
+        </div>
+        <p class="text-2xl font-extrabold text-surface-900">{{ quizzes_taken }}</p>
+        <p class="text-xs text-surface-800/50 mt-1">Quizzes Taken</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-5 hover:shadow-md hover:border-brand-200 transition-all">
+        <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+                <i class="fas fa-chart-line text-emerald-600"></i>
+            </div>
+        </div>
+        <p class="text-2xl font-extrabold text-surface-900">{{ avg_score }}%</p>
+        <p class="text-xs text-surface-800/50 mt-1">Average Score</p>
+    </div>
+    <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-5 hover:shadow-md hover:border-brand-200 transition-all">
+        <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center">
+                <i class="fas fa-book-open text-violet-600"></i>
+            </div>
+        </div>
+        <p class="text-2xl font-extrabold text-surface-900">{{ enrollments|length }}</p>
+        <p class="text-xs text-surface-800/50 mt-1">Enrolled Courses</p>
+    </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left Column (2/3) -->
+    <div class="lg:col-span-2 space-y-6">
+
+        <!-- Learning Progress -->
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-6">
+            <h2 class="text-lg font-extrabold text-surface-900 mb-5">Learning Progress</h2>
+            <div class="space-y-4">
+                <div>
+                    <div class="flex justify-between text-sm mb-1.5">
+                        <span class="text-surface-800/70">Overall Progress</span>
+                        <span class="font-bold text-surface-900">{{ overall_progress }}%</span>
+                    </div>
+                    <div class="w-full bg-surface-100 rounded-full h-2.5">
+                        <div class="bg-gradient-to-r from-brand-600 to-brand-400 h-2.5 rounded-full transition-all" style="width: {{ overall_progress }}%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1.5">
+                        <span class="text-surface-800/70">Courses Completed</span>
+                        <span class="font-bold text-surface-900">{{ completed_count }} / {{ enrollments|length }}</span>
+                    </div>
+                    <div class="w-full bg-surface-100 rounded-full h-2.5">
+                        <div class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-2.5 rounded-full transition-all" style="width: {{ (completed_count / [enrollments|length, 1]|max * 100)|int }}%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1.5">
+                        <span class="text-surface-800/70">Quiz Success Rate</span>
+                        <span class="font-bold text-surface-900">{{ avg_score }}%</span>
+                    </div>
+                    <div class="w-full bg-surface-100 rounded-full h-2.5">
+                        <div class="bg-gradient-to-r from-violet-500 to-violet-400 h-2.5 rounded-full transition-all" style="width: {{ avg_score }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% set course_images = [
+            'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=600&q=80',
+            'https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=600&q=80',
+            'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=600&q=80',
+            'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80',
+            'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&q=80',
+            'https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=600&q=80',
+        ] %}
+
+        <!-- My Courses -->
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-6">
+            <div class="flex items-center justify-between mb-5">
+                <h2 class="text-lg font-extrabold text-surface-900">My Courses</h2>
+                <span class="text-xs text-surface-800/50">{{ enrollments|length }} enrolled</span>
+            </div>
+            {% if courses %}
+            <div class="space-y-4">
+                {% for i in range(courses|length) %}
+                {% set course = courses[i] %}
+                {% set enrollment = enrollments[i] %}
+                <div class="flex items-start gap-4 p-4 border border-surface-100 rounded-xl hover:border-brand-200 hover:bg-brand-50/20 transition-all group">
+                    <div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
+                        <img src="{{ course_images[loop.index0 % 6] }}" alt="{{ course.title }}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h3 class="font-bold text-surface-900 text-sm">{{ course.title }}</h3>
+                                <p class="text-xs text-surface-800/40 mt-0.5">{{ course.instructor_rel.full_name if course.instructor_rel else 'Instructor' }}</p>
+                            </div>
+                            <a href="{{ url_for('course_progress', slug=course.slug) }}" class="opacity-0 group-hover:opacity-100 text-xs bg-brand-600 text-white px-3 py-1.5 rounded-lg hover:bg-brand-700 transition font-semibold flex-shrink-0">
+                                Continue
+                            </a>
+                        </div>
+                        <div class="flex items-center gap-2 mt-3">
+                            <div class="flex-1 bg-surface-100 rounded-full h-2">
+                                <div class="bg-gradient-to-r from-brand-600 to-brand-400 h-2 rounded-full transition-all" style="width: {{ enrollment.progress|int }}%"></div>
+                            </div>
+                            <span class="text-xs font-bold text-surface-900 font-mono w-10 text-right">{{ enrollment.progress|int }}%</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-10">
+                <div class="w-14 h-14 bg-surface-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-book-open text-xl text-surface-200"></i>
+                </div>
+                <p class="text-surface-800/50 text-sm mb-3">You haven't enrolled in any courses yet</p>
+                <a href="{{ url_for('courses') }}" class="inline-block bg-gradient-to-r from-brand-600 to-brand-500 text-white font-bold py-2 px-5 rounded-xl text-sm">Browse Courses</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Column (1/3) -->
+    <div class="space-y-6">
+
+        <!-- Upcoming Deadlines -->
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-6">
+            <h3 class="text-lg font-extrabold text-surface-900 mb-4">Upcoming Deadlines</h3>
+            {% if upcoming_deadlines %}
+            <div class="space-y-3">
+                {% for d in upcoming_deadlines %}
+                <div class="flex items-start gap-3 py-2">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
+                        {% if d.color == 'red' %}bg-red-100{% elif d.color == 'amber' %}bg-amber-100{% else %}bg-emerald-100{% endif %}">
+                        <i class="fas fa-clock text-xs {% if d.color == 'red' %}text-red-600{% elif d.color == 'amber' %}text-amber-600{% else %}text-emerald-600{% endif %}"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-surface-900 truncate">{{ d.title }}</p>
+                        <p class="text-xs text-surface-800/40">{{ d.course_title }}</p>
+                    </div>
+                    <span class="text-xs font-bold flex-shrink-0
+                        {% if d.color == 'red' %}text-red-600{% elif d.color == 'amber' %}text-amber-600{% else %}text-emerald-600{% endif %}">
+                        {{ d.days_left }}d
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <p class="text-surface-800/40 text-sm">No upcoming deadlines</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Recommended Courses -->
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-6">
+            <h3 class="text-lg font-extrabold text-surface-900 mb-4">Recommended</h3>
+            {% if recommended %}
+            <div class="space-y-3">
+                {% for course in recommended %}
+                <a href="{{ url_for('course_detail', slug=course.slug) }}" class="block p-3 border border-surface-100 rounded-xl hover:border-brand-200 hover:bg-brand-50/20 transition-all">
+                    <h4 class="text-sm font-bold text-surface-900">{{ course.title }}</h4>
+                    <p class="text-xs text-surface-800/40 mt-0.5">{{ course.instructor_rel.full_name if course.instructor_rel else 'Instructor' }}</p>
+                    <div class="flex items-center gap-3 mt-2 text-xs text-surface-800/40">
+                        <span><i class="fas fa-users mr-1"></i>{{ course.enrollments }} enrolled</span>
+                        {% if course.rating %}<span><i class="fas fa-star text-amber-400 mr-1"></i>{{ course.rating }}</span>{% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-surface-800/40 text-sm text-center py-4">No recommendations yet</p>
+            {% endif %}
+        </div>
+
+        <!-- Achievements -->
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-6">
+            <h3 class="text-lg font-extrabold text-surface-900 mb-4">Achievements</h3>
+            <div class="grid grid-cols-3 gap-3">
+                <div class="text-center p-2 rounded-xl {{ 'bg-amber-50 border border-amber-200' if enrollments|length >= 1 else 'bg-surface-50 opacity-40' }}">
+                    <span class="text-xl">📚</span>
+                    <p class="text-xs font-semibold mt-1 text-surface-900">First Step</p>
+                </div>
+                <div class="text-center p-2 rounded-xl {{ 'bg-emerald-50 border border-emerald-200' if completed_count >= 1 else 'bg-surface-50 opacity-40' }}">
+                    <span class="text-xl">🎓</span>
+                    <p class="text-xs font-semibold mt-1 text-surface-900">Graduate</p>
+                </div>
+                <div class="text-center p-2 rounded-xl {{ 'bg-blue-50 border border-blue-200' if quizzes_taken >= 5 else 'bg-surface-50 opacity-40' }}">
+                    <span class="text-xl">🧠</span>
+                    <p class="text-xs font-semibold mt-1 text-surface-900">Quiz Pro</p>
+                </div>
+                <div class="text-center p-2 rounded-xl {{ 'bg-purple-50 border border-purple-200' if streak >= 7 else 'bg-surface-50 opacity-40' }}">
+                    <span class="text-xl">🔥</span>
+                    <p class="text-xs font-semibold mt-1 text-surface-900">On Fire</p>
+                </div>
+                <div class="text-center p-2 rounded-xl {{ 'bg-rose-50 border border-rose-200' if certificates|length >= 1 else 'bg-surface-50 opacity-40' }}">
+                    <span class="text-xl">🏆</span>
+                    <p class="text-xs font-semibold mt-1 text-surface-900">Certified</p>
+                </div>
+                <div class="text-center p-2 rounded-xl {{ 'bg-teal-50 border border-teal-200' if avg_score >= 90 else 'bg-surface-50 opacity-40' }}">
+                    <span class="text-xl">⭐</span>
+                    <p class="text-xs font-semibold mt-1 text-surface-900">Top Score</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-6">
+            <h3 class="text-lg font-extrabold text-surface-900 mb-4">Quick Stats</h3>
+            <div class="space-y-3">
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-surface-800/60">In Progress</span>
+                    <span class="font-bold text-surface-900">{{ in_progress_count }}</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-surface-800/60">Completed</span>
+                    <span class="font-bold text-surface-900">{{ completed_count }}</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-surface-800/60">Certificates</span>
+                    <span class="font-bold text-surface-900">{{ certificates|length }}</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-surface-800/60">Quizzes Passed</span>
+                    <span class="font-bold text-surface-900">{{ quizzes_taken }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - E-Learning Portal{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard 👨‍💼</h1>
+        <p class="text-gray-600">Manage platform, users, and courses</p>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-gray-600 text-sm font-medium">Total Users</h3>
+                <span class="text-2xl">👥</span>
+            </div>
+            <p class="text-3xl font-bold text-gray-900">{{ total_users }}</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-gray-600 text-sm font-medium">Students</h3>
+                <span class="text-2xl">📚</span>
+            </div>
+            <p class="text-3xl font-bold text-blue-600">{{ total_students }}</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-gray-600 text-sm font-medium">Teachers</h3>
+                <span class="text-2xl">👨‍🏫</span>
+            </div>
+            <p class="text-3xl font-bold text-green-600">{{ total_teachers }}</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-gray-600 text-sm font-medium">Courses</h3>
+                <span class="text-2xl">🎓</span>
+            </div>
+            <p class="text-3xl font-bold text-purple-600">{{ total_courses }}</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-gray-600 text-sm font-medium">Enrollments</h3>
+                <span class="text-2xl">📊</span>
+            </div>
+            <p class="text-3xl font-bold text-orange-600">{{ total_enrollments }}</p>
+        </div>
+    </div>
+
+    <!-- Main Content Tabs -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="border-b border-gray-200">
+            <div class="flex flex-wrap">
+                <button onclick="showTab('users')" class="tab-btn active px-6 py-4 text-sm font-medium text-gray-900 border-b-2 border-blue-600 hover:text-blue-600">
+                    Users Management
+                </button>
+                <button onclick="showTab('courses')" class="tab-btn px-6 py-4 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:text-gray-900 hover:border-gray-300">
+                    Courses Management
+                </button>
+                <button onclick="showTab('reports')" class="tab-btn px-6 py-4 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:text-gray-900 hover:border-gray-300">
+                    Reports
+                </button>
+            </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="users-tab" class="tab-content p-6">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">All Users</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-gray-200">
+                            <th class="text-left py-3 px-4 font-semibold text-gray-700">Name</th>
+                            <th class="text-left py-3 px-4 font-semibold text-gray-700">Email</th>
+                            <th class="text-left py-3 px-4 font-semibold text-gray-700">Account Type</th>
+                            <th class="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
+                            <th class="text-left py-3 px-4 font-semibold text-gray-700">Last Login</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in all_users %}
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-3 px-4">{{ user.first_name }} {{ user.last_name }}</td>
+                            <td class="py-3 px-4">{{ user.email }}</td>
+                            <td class="py-3 px-4">
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold"
+                                    style="background-color: {% if user.account == 'student' %}rgba(59, 130, 246, 0.1); color: #2563eb{% elif user.account == 'teacher' %}rgba(34, 197, 94, 0.1); color: #22c55e{% else %}rgba(168, 85, 247, 0.1); color: #a855f7{% endif %}">
+                                    {{ user.account|title }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4">
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                    {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 text-sm text-gray-600">{{ user.last_login or 'Never' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Courses Tab -->
+        <div id="courses-tab" class="tab-content hidden p-6">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">All Courses</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for course in all_courses %}
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                    <h4 class="font-bold text-gray-900 mb-2">{{ course.title }}</h4>
+                    <p class="text-sm text-gray-600 mb-3">Instructors: {{ course.instructor.first_name if course.instructor else 'Unknown' }}</p>
+                    <div class="flex items-center justify-between text-sm text-gray-600 mb-3">
+                        <span>📚 {{ course.lessons|length }} Lessons</span>
+                        <span>👥 {{ course.enrollments|length }} Students</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <a href="{{ url_for('view_course', course_id=course.id) }}" class="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded hover:bg-blue-200">View</a>
+                        <button onclick="if(confirm('Archive this course?')) window.location='{{ url_for('delete_course', course_id=course.id) }}'" class="text-xs bg-red-100 text-red-600 px-3 py-1 rounded hover:bg-red-200">Archive</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Reports Tab -->
+        <div id="reports-tab" class="tab-content hidden p-6">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">Platform Reports</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-blue-50 rounded-lg p-6">
+                    <h4 class="font-bold text-gray-900 mb-2">User Growth</h4>
+                    <p class="text-sm text-gray-600 mb-4">{{ total_users }} total users registered</p>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="bg-blue-600 h-3 rounded-full" style="width: 65%"></div>
+                    </div>
+                </div>
+                <div class="bg-green-50 rounded-lg p-6">
+                    <h4 class="font-bold text-gray-900 mb-2">Enrollment Rate</h4>
+                    <p class="text-sm text-gray-600 mb-4">{{ total_enrollments }} total enrollments</p>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="bg-green-600 h-3 rounded-full" style="width: 45%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('border-blue-600', 'text-gray-900'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.add('border-transparent', 'text-gray-600'));
+    
+    // Show selected tab
+    document.getElementById(tabName + '-tab').classList.remove('hidden');
+    event.target.classList.remove('border-transparent', 'text-gray-600');
+    event.target.classList.add('border-blue-600', 'text-gray-900');
+}
+</script>
+{% endblock %}

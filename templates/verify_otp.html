@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="text-center">
+        <h1>OTP Verification</h1>
+        <p>Check your email for the OTP and enter it below:</p>
+        <form method="POST" action="{{ url_for('verify_otp') }}" class="form-signin">
+            <input type="text" name="otp" class="form-control" placeholder="Enter OTP" required><br>
+            <button type="submit" class="btn btn-primary btn-block">Verify OTP</button>
+        </form>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+</div>
+{% endblock %}

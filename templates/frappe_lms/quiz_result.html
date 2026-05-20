@@ -1,0 +1,56 @@
+{% extends "frappe_lms/base.html" %}
+{% block title %}Quiz Results — FCLS{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="mb-6">
+        <a href="{{ url_for('course_detail', slug=quiz.course_ref.slug) }}" class="text-brand-600 hover:text-brand-700 text-sm font-semibold"><i class="fas fa-arrow-left mr-1"></i> Back to Course</a>
+    </div>
+
+    <!-- Score Card -->
+    <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-8 text-center mb-8">
+        <h1 class="text-2xl font-extrabold text-surface-900 mb-4">{{ quiz.title }}</h1>
+        <div class="inline-flex items-center justify-center w-36 h-36 rounded-full {{ 'bg-emerald-50 border-4 border-emerald-400' if submission.is_pass else 'bg-rose-50 border-4 border-rose-400' }} mb-4">
+            <div>
+                <div class="text-4xl font-extrabold {{ 'text-emerald-600' if submission.is_pass else 'text-rose-600' }} font-mono">{{ submission.percentage|int }}%</div>
+                <div class="text-xs text-surface-800/40">Score</div>
+            </div>
+        </div>
+        <div class="text-xl font-extrabold mb-2 {{ 'text-emerald-600' if submission.is_pass else 'text-rose-600' }}">
+            {% if submission.is_pass %}
+            <i class="fas fa-check-circle mr-1"></i> Passed!
+            {% else %}
+            <i class="fas fa-times-circle mr-1"></i> Not Passed
+            {% endif %}
+        </div>
+        <div class="text-surface-800/50 text-sm">
+            Score: <span class="font-mono font-bold">{{ submission.score }}</span> | Passing: <span class="font-mono font-bold">{{ quiz.passing_percentage|int }}%</span>
+        </div>
+    </div>
+
+    <!-- Per-question Results -->
+    {% if quiz.show_answers and results %}
+    <h2 class="text-xl font-extrabold text-surface-900 mb-4">Question Review</h2>
+    {% for result in results %}
+    {% set question = result.submission_ref.quiz_ref.questions|selectattr('question_id', 'equalto', result.question_id)|first %}
+    <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-5 mb-4 border-l-4 {{ 'border-l-emerald-500' if result.correct else 'border-l-rose-500' }}">
+        <div class="flex justify-between mb-2">
+            <h3 class="font-semibold text-surface-900"><span class="text-brand-600 font-mono mr-1">Q{{ loop.index }}.</span></h3>
+            <span class="{{ 'text-emerald-600 bg-emerald-50' if result.correct else 'text-rose-600 bg-rose-50' }} text-sm font-bold px-2.5 py-0.5 rounded-lg">
+                {{ result.marks_obtained }}/{{ result.marks_obtained if result.correct else '0' }}
+            </span>
+        </div>
+        <p class="text-surface-800/60 text-sm mb-2">Your answer: <strong class="text-surface-900 font-mono">{{ result.answer or '—' }}</strong></p>
+        {% if result.correct %}
+        <span class="text-emerald-600 text-sm font-medium"><i class="fas fa-check mr-1"></i> Correct</span>
+        {% else %}
+        <span class="text-rose-600 text-sm font-medium"><i class="fas fa-times mr-1"></i> Incorrect</span>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="text-center mt-6">
+        <a href="{{ url_for('course_detail', slug=quiz.course_ref.slug) }}" class="inline-block bg-gradient-to-r from-brand-600 to-brand-500 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 transition-all">Back to Course</a>
+    </div>
+</div>
+{% endblock %}

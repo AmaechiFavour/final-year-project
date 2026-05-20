@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Home - E-Learning Portal{% endblock %}
+
+{% block content %}
+<div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div>
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">Welcome to E-Learning</h1>
+                <p class="text-xl text-blue-100 mb-8">
+                    Empower yourself with world-class education from the Faculty of Computing. Learn at your own pace, master new skills, and advance your career.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    {% if not logged_in %}
+                        <a href="{{ url_for('register') }}" class="inline-block bg-white text-blue-600 font-bold py-3 px-8 rounded-lg hover:bg-blue-50 transition">
+                            Get Started
+                        </a>
+                        <a href="{{ url_for('login') }}" class="inline-block border-2 border-white text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition">
+                            Sign In
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('browse_courses') }}" class="inline-block bg-white text-blue-600 font-bold py-3 px-8 rounded-lg hover:bg-blue-50 transition">
+                            Explore Courses
+                        </a>
+                        {% if user.account == 'student' %}
+                            <a href="{{ url_for('student_dashboard') }}" class="inline-block border-2 border-white text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition">
+                                My Dashboard
+                            </a>
+                        {% elif user.account == 'teacher' %}
+                            <a href="{{ url_for('create_course') }}" class="inline-block border-2 border-white text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition">
+                                Create Course
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="hidden md:block">
+                <svg class="w-full h-auto" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="50" y="50" width="300" height="200" rx="10" fill="rgba(255,255,255,0.1)" stroke="white" stroke-width="2"/>
+                    <circle cx="200" cy="100" r="30" fill="white" opacity="0.3"/>
+                    <rect x="100" y="150" width="200" height="10" rx="5" fill="white" opacity="0.3"/>
+                    <rect x="100" y="170" width="180" height="10" rx="5" fill="white" opacity="0.3"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Section -->
+<div class="bg-white py-12 border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="text-center">
+                <div class="text-4xl font-bold text-blue-600 mb-2">{{ total_courses }}</div>
+                <p class="text-gray-600">Active Courses</p>
+            </div>
+            <div class="text-center">
+                <div class="text-4xl font-bold text-blue-600 mb-2">{{ total_students }}</div>
+                <p class="text-gray-600">Enrolled Students</p>
+            </div>
+            <div class="text-center">
+                <div class="text-4xl font-bold text-blue-600 mb-2">{{ total_teachers }}</div>
+                <p class="text-gray-600">Expert Instructors</p>
+            </div>
+            <div class="text-center">
+                <div class="text-4xl font-bold text-blue-600 mb-2">1000+</div>
+                <p class="text-gray-600">Learning Hours</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Courses Section -->
+<div class="bg-gray-50 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-2">Featured Courses</h2>
+            <p class="text-gray-600">Start learning with our most popular courses</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for course in featured_courses %}
+            <div class="course-card bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300">
+                <!-- Course Header -->
+                <div class="h-40 bg-gradient-to-br {{ course.gradient_color | default('from-blue-500 to-blue-600') }} flex items-center justify-center p-4">
+                    {% if course.image %}
+                        <img src="{{ course.image }}" alt="{{ course.title }}" class="w-full h-full object-cover">
+                    {% else %}
+                        <h3 class="text-white text-2xl font-bold text-center">{{ course.title }}</h3>
+                    {% endif %}
+                </div>
+                
+                <!-- Course Content -->
+                <div class="p-5">
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">{{ course.title }}</h3>
+                    <p class="text-gray-600 text-sm mb-4" title="{{ course.summary }}">
+                        {{ course.summary[:80] }}{% if course.summary|length > 80 %}...{% endif %}
+                    </p>
+                    
+                    <!-- Course Stats -->
+                    <div class="flex items-center justify-between mb-4 text-sm text-gray-600">
+                        <div class="flex items-center gap-2">
+                            <span>📚</span>
+                            <span>{{ course.lessons_count | default(0) }} Lessons</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span>👥</span>
+                            <span>{{ course.enrollment_count | default(0) }} Students</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Instructor -->
+                    <div class="flex items-center gap-2 mb-4 pb-4 border-b border-gray-200">
+                        <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                            {{ course.instructor_name[0].upper() if course.instructor_name else 'I' }}
+                        </div>
+                        <div class="text-sm">
+                            <p class="font-semibold text-gray-900">{{ course.instructor_name | default('Instructor') }}</p>
+                            <p class="text-gray-600">Instructor</p>
+                        </div>
+                    </div>
+                    
+                    <!-- CTA Button -->
+                    <a href="{{ url_for('course_detail', course_id=course.id) }}" class="block w-full text-center bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition">
+                        View Course
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if not courses_empty %}
+        <div class="text-center mt-12">
+            <a href="{{ url_for('browse_courses') }}" class="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                Browse All Courses
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Why Choose Us Section -->
+<div class="bg-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-2">Why Choose Our Platform?</h2>
+            <p class="text-gray-600">Everything you need for success</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5.951-1.429 5.951 1.42a1 1 0 001.17-1.409l-7-14z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Expert Instructors</h3>
+                <p class="text-gray-600">Learn from industry experts with years of practical experience</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Learn at Your Pace</h3>
+                <p class="text-gray-600">Flexible learning schedule that fits your lifestyle</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M13 7H7v6h6V7z"></path>
+                        <path fill-rule="evenodd" d="M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2V2a1 1 0 112 0v1h1a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2a2 2 0 01-2 2h-1v1a1 1 0 11-2 0v-1h-2v1a1 1 0 11-2 0v-1H7a2 2 0 01-2-2v-2H4a1 1 0 110-2h1V9H4a1 1 0 010-2h1V5a2 2 0 012-2h1V2zM9 5H7v2h2V5zm0 4H7v2h2V9zm2-4h2v2h-2V5zm0 4h2v2h-2V9z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Earn Certificates</h3>
+                <p class="text-gray-600">Get recognized credentials upon course completion</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zm-11-1a1 1 0 11-2 0 1 1 0 012 0z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Community Support</h3>
+                <p class="text-gray-600">Connect with peers and get help from instructors</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Track Progress</h3>
+                <p class="text-gray-600">Monitor your learning progress with detailed analytics</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10.52c1.057-.574 2.245-.842 3.5-.842 1.579 0 3.062.42 4.276 1.15V4.804z"></path>
+                        <path d="M11 15.95v-5.951c1.215-.731 2.698-1.15 4.276-1.15 1.255 0 2.443.29 3.5.804v10.52c-1.057-.574-2.245-.842-3.5-.842-1.579 0-3.062.42-4.276 1.15z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Lifetime Access</h3>
+                <p class="text-gray-600">Access course materials forever after enrollment</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="bg-blue-600 text-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl font-bold mb-4">Ready to Start Learning?</h2>
+        <p class="text-xl text-blue-100 mb-8">Join thousands of students advancing their careers on our platform</p>
+        {% if not logged_in %}
+            <a href="{{ url_for('register') }}" class="inline-block bg-white text-blue-600 font-bold py-3 px-8 rounded-lg hover:bg-blue-50 transition">
+                Sign Up Now
+            </a>
+        {% else %}
+            <a href="{{ url_for('browse_courses') }}" class="inline-block bg-white text-blue-600 font-bold py-3 px-8 rounded-lg hover:bg-blue-50 transition">
+                Start Learning
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

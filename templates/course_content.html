@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}{{ course.title }} - Course Content{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <!-- Sidebar -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-md p-6 sticky top-20">
+                <h2 class="text-lg font-bold text-gray-900 mb-4">Course Content</h2>
+                <div class="space-y-2 max-h-96 overflow-y-auto">
+                    {% for lesson in course.lessons %}
+                    <a href="{{ url_for('view_lesson', lesson_id=lesson.id) }}" class="block px-4 py-2 rounded hover:bg-blue-50 text-sm">
+                        📄 {{ lesson.title }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="lg:col-span-3">
+            <div class="bg-white rounded-lg shadow-md p-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ course.title }}</h1>
+                <p class="text-gray-600 mb-6">{{ course.description }}</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 p-4 bg-gray-50 rounded">
+                    <div>
+                        <p class="text-sm text-gray-600">📚 Lessons</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ course.lessons|length }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">⏱️ Duration</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ course.duration_hours }}h</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">📊 Level</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ course.difficulty_level|title }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">👥 Students</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ course.enrollments|length }}</p>
+                    </div>
+                </div>
+
+                {% if course.lessons %}
+                <div class="mt-8">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Lessons</h3>
+                    <div class="space-y-3">
+                        {% for lesson in course.lessons %}
+                        <div class="border border-gray-200 rounded p-4 hover:shadow-md transition">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-bold text-gray-900">{{ lesson.title }}</h4>
+                                    <p class="text-sm text-gray-600">{{ lesson.content[:100] if lesson.content else 'No description' }}</p>
+                                </div>
+                                <a href="{{ url_for('view_lesson', lesson_id=lesson.id) }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Start</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-center text-gray-600 py-12">No lessons available yet</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

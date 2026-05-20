@@ -1,0 +1,89 @@
+{% extends "frappe_lms/base.html" %}
+{% block title %}{{ lesson.title }} — FCLS{% endblock %}
+{% block content %}
+<div class="mb-5 flex items-center gap-2 text-sm">
+    <a href="{{ url_for('course_progress', slug=course.slug) }}" class="text-brand-600 hover:text-brand-700 font-medium">{{ course.title }}</a>
+    <i class="fas fa-chevron-right text-surface-200 text-xs"></i>
+    <span class="text-surface-800/50">{{ chapter.title }}</span>
+    <i class="fas fa-chevron-right text-surface-200 text-xs"></i>
+    <span class="text-surface-900 font-semibold">{{ lesson.title }}</span>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <!-- Sidebar -->
+    <div class="lg:col-span-1 order-2 lg:order-1">
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-5 sticky top-24 max-h-[80vh] overflow-y-auto">
+            <h3 class="font-bold text-xs text-surface-800/40 uppercase tracking-wider mb-3">Contents</h3>
+            {% for ch in all_chapters %}
+            <div class="mb-4">
+                <div class="font-semibold text-xs text-surface-800/40 mb-1.5 flex items-center gap-2">
+                    <span class="w-5 h-5 bg-brand-100 text-brand-600 rounded-md flex items-center justify-center text-[10px] font-bold">{{ loop.index }}</span>
+                    {{ ch.title }}
+                </div>
+                {% for l in ch.lessons %}
+                <a href="{{ url_for('view_lesson', lesson_id=l.id) }}"
+                   class="block py-1.5 px-3 text-sm rounded-lg transition-colors {{ 'bg-brand-50 text-brand-600 font-semibold border border-brand-100' if l.id == lesson.id else 'text-surface-800/60 hover:bg-surface-50' }}">
+                    {{ l.title }}
+                </a>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:col-span-3 order-1 lg:order-2">
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-8">
+            <h1 class="text-2xl font-extrabold text-surface-900 mb-6">{{ lesson.title }}</h1>
+
+            {% if lesson.youtube %}
+            <div class="mb-6 rounded-xl overflow-hidden bg-surface-900 aspect-video shadow-lg">
+                <iframe src="https://www.youtube.com/embed/{{ lesson.youtube }}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+            </div>
+            {% endif %}
+
+            {% if lesson.body %}
+            <div class="prose max-w-none mb-6 text-surface-800/70">{{ lesson.body|safe }}</div>
+            {% endif %}
+
+            {% if lesson.duration %}
+            <div class="text-sm text-surface-800/40 mb-6 flex items-center gap-2"><i class="fas fa-clock text-brand-400"></i> <span class="font-mono">{{ lesson.duration }} minutes</span></div>
+            {% endif %}
+
+            <!-- Mark Complete -->
+            <div class="border-t border-surface-100 pt-6 mt-6">
+                <button onclick="markComplete()" id="completeBtn" class="bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all">
+                    <i class="fas fa-check mr-2"></i>Mark as Complete
+                </button>
+            </div>
+
+            <!-- Navigation -->
+            <div class="flex justify-between mt-6">
+                {% if current_index > 0 %}
+                <a href="{{ url_for('view_lesson', lesson_id=lessons_in_chapter[current_index - 1].id) }}" class="text-brand-600 hover:text-brand-700 text-sm font-semibold"><i class="fas fa-arrow-left mr-1"></i> Previous Lesson</a>
+                {% else %}
+                <span></span>
+                {% endif %}
+                {% if current_index < lessons_in_chapter|length - 1 %}
+                <a href="{{ url_for('view_lesson', lesson_id=lessons_in_chapter[current_index + 1].id) }}" class="text-brand-600 hover:text-brand-700 text-sm font-semibold">Next Lesson <i class="fas fa-arrow-right ml-1"></i></a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function markComplete() {
+    fetch('{{ url_for("mark_lesson_complete", lesson_id=lesson.id) }}', {method:'POST'})
+    .then(r => r.json()).then(d => {
+        if (d.success) {
+            const btn = document.getElementById('completeBtn');
+            btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Completed';
+            btn.classList.remove('from-emerald-600','to-emerald-500','shadow-emerald-500/25','hover:shadow-emerald-500/40');
+            btn.classList.add('from-surface-400','to-surface-300','cursor-default','shadow-none');
+            btn.disabled = true;
+        }
+    });
+}
+</script>
+{% endblock %}

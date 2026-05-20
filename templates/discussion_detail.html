@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900">{{ discussion.title }}</h1>
+            <div class="flex items-center gap-4 mt-3 text-gray-600">
+                <span>Asked by <strong>{{ discussion.created_by.first_name }}</strong></span>
+                <span>{{ discussion.created_at.strftime('%B %d, %Y') }}</span>
+                {% if discussion.is_solved %}
+                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">✓ Solved</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Content -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Original Question -->
+                <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-blue-500">
+                    <p class="text-gray-700 whitespace-pre-wrap">{{ discussion.content }}</p>
+                </div>
+
+                <!-- Replies -->
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ discussion.replies | length }} Answers</h2>
+                    
+                    {% if discussion.replies %}
+                    <div class="space-y-4">
+                        {% for reply in replies %}
+                        <div class="bg-white rounded-lg shadow p-6 {% if reply.is_marked_as_answer %}border-l-4 border-green-500{% endif %}">
+                            <div class="flex items-start justify-between mb-3">
+                                <div>
+                                    <p class="font-semibold text-gray-900">{{ reply.created_by.first_name }} {{ reply.created_by.last_name }}</p>
+                                    {% if reply.created_by.account == 'teacher' %}
+                                    <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Instructor</span>
+                                    {% endif %}
+                                    <p class="text-sm text-gray-600 mt-1">{{ reply.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                                </div>
+                                {% if reply.is_marked_as_answer %}
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">Accepted Answer</span>
+                                {% endif %}
+                            </div>
+
+                            <p class="text-gray-700 whitespace-pre-wrap mt-4">{{ reply.content }}</p>
+
+                            <div class="mt-4 flex items-center gap-4 text-sm">
+                                <span class="text-gray-600">👍 {{ reply.upvotes }} helpful</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="bg-white rounded-lg shadow p-6 text-center">
+                        <p class="text-gray-500">No answers yet. Be the first to help!</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Reply Form -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Share Your Answer</h3>
+                    <form method="POST" action="{{ url_for('reply_discussion', discussion_id=discussion.id) }}" class="space-y-4">
+                        <textarea name="content" rows="6" required
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="Write your answer..."></textarea>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+                            Post Answer
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-lg p-6 sticky top-24">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Question Stats</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="border-b pb-3">
+                            <p class="text-sm text-gray-600">Answers</p>
+                            <p class="text-3xl font-bold text-blue-600">{{ discussion.replies | length }}</p>
+                        </div>
+
+                        <div class="border-b pb-3">
+                            <p class="text-sm text-gray-600">Views</p>
+                            <p class="text-3xl font-bold text-indigo-600">—</p>
+                        </div>
+
+                        <div>
+                            <p class="text-sm text-gray-600">Asked By</p>
+                            <p class="font-semibold text-gray-900">{{ discussion.created_by.first_name }}</p>
+                        </div>
+                    </div>
+
+                    <a href="{{ url_for('view_course_discussions', course_id=discussion.course_id) }}" 
+                       class="w-full mt-6 block text-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg transition">
+                        Back to Forum
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

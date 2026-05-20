@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Question - E-Learning Portal{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Progress Bar -->
+    <div class="mb-6">
+        <div class="flex justify-between items-center mb-2">
+            <p class="text-sm font-medium text-gray-700">Question {{ current_question }} of {{ total_questions }}</p>
+            <p class="text-sm font-medium text-gray-700" id="timer">Time Remaining: <span id="timer-value">--:--</span></p>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2">
+            <div class="bg-blue-600 h-2 rounded-full" style="width: {{ (current_question / total_questions * 100) }}%"></div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ question.question_text }}</h2>
+
+        <form method="POST" action="{{ url_for('submit_quiz_answer', quiz_id=quiz_id, attempt_id=attempt_id) }}" class="space-y-4">
+            <input type="hidden" name="question_id" value="{{ question.id }}">
+            
+            {% if question.question_type == 'multiple_choice' %}
+                <div class="space-y-3">
+                    {% for option in question.options %}
+                    <label class="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-blue-50">
+                        <input type="radio" name="answer" value="{{ option.id }}" required class="w-4 h-4 text-blue-600">
+                        <span class="ml-3 text-gray-900">{{ option.option_text }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            {% elif question.question_type == 'true_false' %}
+                <div class="space-y-3">
+                    <label class="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-blue-50">
+                        <input type="radio" name="answer" value="true" required class="w-4 h-4 text-blue-600">
+                        <span class="ml-3 text-gray-900">True</span>
+                    </label>
+                    <label class="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-blue-50">
+                        <input type="radio" name="answer" value="false" required class="w-4 h-4 text-blue-600">
+                        <span class="ml-3 text-gray-900">False</span>
+                    </label>
+                </div>
+            {% else %}
+                <textarea name="answer" required placeholder="Type your answer here..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-24"></textarea>
+            {% endif %}
+
+            <div class="flex gap-4 pt-6">
+                <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700">
+                    {% if current_question == total_questions %}Submit Quiz{% else %}Next Question{% endif %}
+                </button>
+                {% if current_question > 1 %}
+                <a href="{{ url_for('quiz_question', quiz_id=quiz_id, attempt_id=attempt_id, question_num=current_question-1) }}" class="bg-gray-200 text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300">Previous</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

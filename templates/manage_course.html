@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Manage {{ course.title }} - E-Learning Portal{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ course.title }}</h1>
+            <p class="text-gray-600">Manage course content and settings</p>
+        </div>
+        <a href="{{ url_for('create_lesson', course_id=course.id) }}" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700">+ Add Lesson</a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <p class="text-sm text-gray-600">Lessons</p>
+            <p class="text-3xl font-bold text-gray-900">{{ course.lessons|length }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <p class="text-sm text-gray-600">Students</p>
+            <p class="text-3xl font-bold text-gray-900">{{ course.enrollments|length }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <p class="text-sm text-gray-600">Quizzes</p>
+            <p class="text-3xl font-bold text-gray-900">{{ course.quizzes|length }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <p class="text-sm text-gray-600">Status</p>
+            <p class="text-3xl font-bold text-gray-900">{% if course.is_published %}Published{% else %}Draft{% endif %}</p>
+        </div>
+    </div>
+
+    <!-- Lessons Section -->
+    <div class="bg-white rounded-lg shadow-md p-8 mb-6">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">📚 Lessons</h2>
+        {% if course.lessons %}
+        <div class="space-y-3">
+            {% for lesson in course.lessons %}
+            <div class="border border-gray-200 rounded p-4 flex justify-between items-center hover:shadow-md transition">
+                <div>
+                    <h4 class="font-bold text-gray-900">{{ lesson.title }}</h4>
+                    <p class="text-sm text-gray-600">{{ lesson.content[:60] if lesson.content else 'No description' }}...</p>
+                </div>
+                <div class="flex gap-2">
+                    <a href="{{ url_for('edit_lesson', lesson_id=lesson.id) }}" class="bg-blue-100 text-blue-600 px-3 py-1 rounded text-sm hover:bg-blue-200">Edit</a>
+                    <button onclick="if(confirm('Delete this lesson?')) window.location='{{ url_for('delete_lesson', lesson_id=lesson.id) }}'" class="bg-red-100 text-red-600 px-3 py-1 rounded text-sm hover:bg-red-200">Delete</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-600 text-center py-8">No lessons yet. Create one to get started!</p>
+        {% endif %}
+    </div>
+
+    <!-- Course Settings -->
+    <div class="bg-white rounded-lg shadow-md p-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">⚙️ Course Settings</h2>
+        <div class="flex gap-4">
+            <a href="{{ url_for('edit_course', course_id=course.id) }}" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700">Edit Course Info</a>
+            <button onclick="if(confirm('Archive this course?')) window.location='{{ url_for('delete_course', course_id=course.id) }}'" class="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700">Archive Course</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900">{{ batch.title }}</h1>
+            <p class="text-lg text-gray-600">{{ batch.course_rel.title }}</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Content -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Batch Details -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Batch Details</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="border-l-4 border-blue-500 pl-4">
+                            <p class="text-sm text-gray-600">Start Date</p>
+                            <p class="text-lg font-semibold text-gray-900">{{ batch.start_date.strftime('%B %d, %Y') }}</p>
+                        </div>
+                        <div class="border-l-4 border-green-500 pl-4">
+                            <p class="text-sm text-gray-600">End Date</p>
+                            <p class="text-lg font-semibold text-gray-900">{{ batch.end_date.strftime('%B %d, %Y') if batch.end_date else 'Ongoing' }}</p>
+                        </div>
+                        <div class="border-l-4 border-purple-500 pl-4">
+                            <p class="text-sm text-gray-600">Enrolled Students</p>
+                            <p class="text-lg font-semibold text-gray-900">{{ batch_enrollments | length }}{% if batch.max_students %} / {{ batch.max_students }}{% endif %}</p>
+                        </div>
+                        <div class="border-l-4 border-red-500 pl-4">
+                            <p class="text-sm text-gray-600">Instructor</p>
+                            <p class="text-lg font-semibold text-gray-900">{{ batch.instructor_rel.first_name }}</p>
+                        </div>
+                    </div>
+                    {% if batch.description %}
+                    <div class="mt-6 pt-6 border-t">
+                        <p class="text-gray-700">{{ batch.description }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Live Classes -->
+                {% if live_classes or is_instructor %}
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-2xl font-bold text-gray-900">Live Classes</h2>
+                        {% if is_instructor %}
+                        <a href="{{ url_for('add_live_class', batch_id=batch.id) }}" 
+                           class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
+                            Schedule Class
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    {% if live_classes %}
+                    <div class="space-y-4">
+                        {% for lc in live_classes | sort(attribute='scheduled_at') %}
+                        <div class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-l-4 border-blue-500">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h3 class="font-bold text-gray-900">{{ lc.title }}</h3>
+                                    <p class="text-sm text-gray-600 mt-1">{{ lc.scheduled_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                                    {% if lc.duration_minutes %}
+                                    <p class="text-sm text-gray-600">Duration: {{ lc.duration_minutes }} minutes</p>
+                                    {% endif %}
+                                </div>
+                                {% if lc.zoom_link %}
+                                <a href="{{ lc.zoom_link }}" target="_blank" 
+                                   class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded transition">
+                                    Join Class
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-gray-500 italic">No scheduled classes yet.</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Enrolled Students -->
+                {% if is_instructor %}
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Enrolled Students</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-100 border-b">
+                                <tr>
+                                    <th class="text-left px-4 py-2 font-semibold text-gray-900">Student Name</th>
+                                    <th class="text-left px-4 py-2 font-semibold text-gray-900">Email</th>
+                                    <th class="text-left px-4 py-2 font-semibold text-gray-900">Progress</th>
+                                    <th class="text-left px-4 py-2 font-semibold text-gray-900">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for enrollment in batch_enrollments %}
+                                <tr class="border-b hover:bg-gray-50">
+                                    <td class="px-4 py-3">{{ enrollment.student_rel.first_name }} {{ enrollment.student_rel.last_name }}</td>
+                                    <td class="px-4 py-3">{{ enrollment.student_rel.email }}</td>
+                                    <td class="px-4 py-3">
+                                        <div class="w-32 bg-gray-200 rounded-full h-2">
+                                            <div class="bg-blue-600 h-2 rounded-full" style="width: {{ enrollment.progress_percentage if enrollment.progress_percentage else 0 }}%"></div>
+                                        </div>
+                                        <span class="text-xs text-gray-600">{{ enrollment.progress_percentage | int }}%</span>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        {% if enrollment.is_completed %}
+                                        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">Completed</span>
+                                        {% else %}
+                                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">Enrolled</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-lg p-6 sticky top-24">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Quick Actions</h3>
+                    
+                    {% if not user.batch_enrollments | selectattr('batch_id', 'equalto', batch.id) | list %}
+                    <form method="POST" action="{{ url_for('enroll_batch', batch_id=batch.id) }}">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
+                            Join Batch
+                        </button>
+                    </form>
+                    {% else %}
+                    <div class="p-4 bg-green-50 rounded-lg border border-green-200">
+                        <p class="text-green-800 font-semibold">✓ You're enrolled</p>
+                    </div>
+                    {% endif %}
+
+                    <a href="{{ url_for('view_course_content', course_id=batch.course_id) }}" 
+                       class="w-full mt-3 block text-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg transition">
+                        Course Content
+                    </a>
+
+                    <a href="{{ url_for('view_course_discussions', course_id=batch.course_id) }}" 
+                       class="w-full mt-3 block text-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg transition">
+                        Q&A Forum
+                    </a>
+
+                    {% if is_instructor %}
+                    <a href="{{ url_for('manage_batch', batch_id=batch.id) }}" 
+                       class="w-full mt-3 block text-center bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition">
+                        Manage Batch
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends "frappe_lms/base.html" %}
+{% block title %}{{ course.title }} — FCLS{% endblock %}
+
+{% set hero_images = [
+    'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1400&q=80',
+    'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=1400&q=80',
+    'https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=1400&q=80',
+    'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=1400&q=80',
+] %}
+
+{% block content %}
+<!-- Hero with Image -->
+<div class="relative rounded-2xl overflow-hidden mb-8">
+    <img src="{{ hero_images[course.id % 4] }}" alt="{{ course.title }}" class="w-full h-72 object-cover">
+    <div class="absolute inset-0 bg-gradient-to-r from-surface-900/90 via-surface-900/70 to-transparent"></div>
+    <div class="absolute inset-0 flex items-center p-10">
+        <div class="max-w-3xl">
+            {% if course.category %}
+            <span class="bg-brand-500/30 text-brand-200 text-xs font-bold px-3 py-1 rounded-lg backdrop-blur-sm border border-brand-400/20">{{ course.category }}</span>
+            {% endif %}
+            <h1 class="text-4xl font-extrabold text-white mt-3 mb-3 drop-shadow-lg">{{ course.title }}</h1>
+            <p class="text-surface-200 text-lg mb-4">{{ course.short_introduction }}</p>
+            <div class="flex flex-wrap gap-4 text-sm text-surface-300">
+                <span class="flex items-center gap-1.5"><i class="fas fa-user-tie"></i> {{ course.instructor_rel.full_name }}</span>
+                <span class="flex items-center gap-1.5"><i class="fas fa-book-open"></i> {{ total_lessons }} lessons</span>
+                <span class="flex items-center gap-1.5"><i class="fas fa-layer-group"></i> {{ chapters|length }} chapters</span>
+                {% if course.rating %}
+                <span class="flex items-center gap-1.5 text-amber-400"><i class="fas fa-star"></i> {{ course.rating }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Content -->
+    <div class="lg:col-span-2">
+        <!-- Description -->
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-7 mb-6">
+            <h2 class="text-xl font-extrabold text-surface-900 mb-4">About This Course</h2>
+            <div class="prose max-w-none text-surface-800/70">{{ course.description }}</div>
+        </div>
+
+        <!-- Chapters & Lessons -->
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-7 mb-6">
+            <h2 class="text-xl font-extrabold text-surface-900 mb-4">Course Content</h2>
+            {% for chapter in chapters %}
+            <div class="border border-surface-100 rounded-xl mb-3 overflow-hidden">
+                <div class="bg-surface-50 px-5 py-3.5 flex justify-between items-center cursor-pointer hover:bg-brand-50/50 transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                    <div class="flex items-center gap-3">
+                        <span class="w-7 h-7 bg-brand-100 text-brand-600 rounded-lg flex items-center justify-center text-xs font-bold">{{ chapter.order + 1 }}</span>
+                        <span class="font-semibold text-surface-900">{{ chapter.title }}</span>
+                    </div>
+                    <span class="text-xs text-surface-800/40 flex items-center gap-1">{{ chapter.lessons|length }} lessons <i class="fas fa-chevron-down ml-1 transition-transform"></i></span>
+                </div>
+                <div class="hidden">
+                    {% for lesson in chapter.lessons %}
+                    <div class="px-5 py-3 border-t border-surface-100 flex items-center gap-3 text-sm hover:bg-surface-50 transition-colors">
+                        <i class="fas fa-play-circle text-brand-400"></i>
+                        <span class="text-surface-800">{{ lesson.title }}</span>
+                        {% if lesson.duration %}
+                        <span class="ml-auto text-surface-800/40 text-xs font-mono">{{ lesson.duration }} min</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Reviews -->
+        {% if reviews %}
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-7">
+            <h2 class="text-xl font-extrabold text-surface-900 mb-4">Reviews ({{ reviews|length }})</h2>
+            {% for review in reviews %}
+            <div class="border-b border-surface-100 last:border-0 py-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="text-amber-400 text-sm">
+                        {% for i in range(review.rating) %}<i class="fas fa-star"></i>{% endfor %}
+                        {% for i in range(5 - review.rating) %}<i class="far fa-star text-surface-200"></i>{% endfor %}
+                    </div>
+                    {% if review.title %}
+                    <span class="font-semibold text-sm text-surface-900">{{ review.title }}</span>
+                    {% endif %}
+                </div>
+                {% if review.review_text %}
+                <p class="text-surface-800/60 text-sm">{{ review.review_text }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div>
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-100 p-7 sticky top-24">
+            {% if course.paid_course and course.course_price %}
+            <div class="text-3xl font-extrabold text-brand-600 mb-1">₦{{ "{:,.0f}".format(course.course_price) }}</div>
+            <p class="text-xs text-surface-800/40">One-time payment &middot; Paystack</p>
+            <span class="inline-block mt-2 bg-amber-50 text-amber-700 text-[10px] font-bold px-2.5 py-1 rounded-lg"><i class="fas fa-lock mr-1"></i>Paid Course</span>
+            {% else %}
+            <div class="text-3xl font-extrabold text-emerald-600 mb-1">Free</div>
+            <p class="text-xs text-surface-800/40">Full access included</p>
+            {% endif %}
+
+            {% if logged_in %}
+                {% if enrolled %}
+                <a href="{{ url_for('course_progress', slug=course.slug) }}" class="block w-full bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold py-3 rounded-xl text-center shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all mt-5">
+                    <i class="fas fa-play mr-2"></i>Continue Learning
+                </a>
+                {% elif course.paid_course and course.course_price %}
+                <form method="POST" action="{{ url_for('initiate_payment', slug=course.slug) }}">
+                    <button type="submit" class="w-full bg-gradient-to-r from-brand-600 to-brand-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 transition-all mt-5">
+                        <i class="fas fa-lock mr-2"></i>Pay ₦{{ "{:,.0f}".format(course.course_price) }} to Enroll
+                    </button>
+                </form>
+                {% else %}
+                <form method="POST" action="{{ url_for('enroll_course', slug=course.slug) }}">
+                    <button type="submit" class="w-full bg-gradient-to-r from-brand-600 to-brand-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 transition-all mt-5">
+                        <i class="fas fa-plus mr-2"></i>Enroll Now — Free
+                    </button>
+                </form>
+                {% endif %}
+            {% else %}
+            <a href="{{ url_for('login') }}" class="block w-full bg-gradient-to-r from-brand-600 to-brand-500 text-white font-bold py-3 rounded-xl text-center shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 transition-all mt-5">
+                Login to Enroll
+            </a>
+            {% endif %}
+
+            <div class="mt-6 space-y-3 text-sm">
+                <div class="flex justify-between items-center py-2 border-b border-surface-100"><span class="text-surface-800/50"><i class="fas fa-layer-group mr-2 text-brand-400"></i>Chapters</span><strong class="text-surface-900">{{ chapters|length }}</strong></div>
+                <div class="flex justify-between items-center py-2 border-b border-surface-100"><span class="text-surface-800/50"><i class="fas fa-book-open mr-2 text-brand-400"></i>Lessons</span><strong class="text-surface-900">{{ total_lessons }}</strong></div>
+                <div class="flex justify-between items-center py-2 border-b border-surface-100"><span class="text-surface-800/50"><i class="fas fa-user-tie mr-2 text-brand-400"></i>Instructor</span><strong class="text-surface-900">{{ course.instructor_rel.full_name }}</strong></div>
+                {% if course.enable_certification %}
+                <div class="flex justify-between items-center py-2"><span class="text-surface-800/50"><i class="fas fa-certificate mr-2 text-brand-400"></i>Certificate</span><strong class="text-emerald-600"><i class="fas fa-check-circle"></i> Yes</strong></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
