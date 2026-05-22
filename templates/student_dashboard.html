@@ -40,7 +40,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                         Browse Courses
                     </a>
-                    <a href="{{ url_for('certificates') }}" class="inline-flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition">
+                    <a href="{{ url_for('view_certificates') }}" class="inline-flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
                         Certificates
                     </a>
@@ -150,6 +150,7 @@
                     {% if enrolled_courses %}
                     <div class="space-y-3">
                         {% for course in enrolled_courses %}
+                        {% set progress_pct = ((course.progress if course.progress is defined else (progress_data.get(course.id, 0) if progress_data is defined else 0)) | default(0, true) | float) %}
                         <div class="flex items-center gap-4 p-4 border border-gray-100 rounded-lg hover:border-blue-200 hover:bg-blue-50/30 transition-all group">
                             <div class="w-14 h-14 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
                                 <span class="text-white text-xl font-bold">{{ course.title[:1] }}</span>
@@ -159,9 +160,9 @@
                                 <p class="text-xs text-gray-500 mt-0.5">{{ course.instructor_name }}</p>
                                 <div class="flex items-center gap-2 mt-2">
                                     <div class="flex-1 bg-gray-100 rounded-full h-1.5">
-                                        <div class="bg-blue-600 h-1.5 rounded-full" style="width: {{ course.progress }}%"></div>
+                                        <div class="bg-blue-600 h-1.5 rounded-full" style="width: {{ progress_pct }}%"></div>
                                     </div>
-                                    <span class="text-xs font-medium text-gray-600">{{ course.progress | round(0) | int }}%</span>
+                                    <span class="text-xs font-medium text-gray-600">{{ progress_pct | round(0) | int }}%</span>
                                 </div>
                             </div>
                             <a href="{{ url_for('view_course', course_id=course.id) }}" 
@@ -295,7 +296,7 @@
                             <span class="text-xl">💪</span>
                             <p class="text-[10px] text-gray-600 mt-1 font-medium">Dedicated</p>
                         </div>
-                        <div class="text-center p-3 rounded-lg {{ 'bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200' if certificates_earned >= 1 else 'bg-gray-50 opacity-40' }}">
+                        <div class="text-center p-3 rounded-lg {{ 'bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200' if (certificates_earned | default(0, true)) >= 1 else 'bg-gray-50 opacity-40' }}">
                             <span class="text-xl">📜</span>
                             <p class="text-[10px] text-gray-600 mt-1 font-medium">Certified</p>
                         </div>
@@ -316,11 +317,11 @@
                         </div>
                         <div class="flex items-center justify-between py-2 border-b border-gray-50">
                             <span class="text-sm text-gray-600">Certificates Earned</span>
-                            <span class="text-sm font-bold text-gray-900">{{ certificates_earned }}</span>
+                            <span class="text-sm font-bold text-gray-900">{{ certificates_earned | default(0, true) }}</span>
                         </div>
                         <div class="flex items-center justify-between py-2">
                             <span class="text-sm text-gray-600">Lessons Completed</span>
-                            <span class="text-sm font-bold text-gray-900">{{ total_lessons_completed }}</span>
+                            <span class="text-sm font-bold text-gray-900">{{ total_lessons_completed | default(0, true) }}</span>
                         </div>
                     </div>
                 </div>

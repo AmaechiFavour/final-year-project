@@ -18,7 +18,7 @@
     <div class="bg-white rounded-lg shadow-md p-8">
         <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ question.question_text }}</h2>
 
-        <form method="POST" action="{{ url_for('submit_quiz_answer', quiz_id=quiz_id, attempt_id=attempt_id) }}" class="space-y-4">
+        <form method="POST" action="{{ url_for('save_quiz_answer', quiz_id=quiz_id, attempt_id=attempt_id) }}" class="space-y-4">
             <input type="hidden" name="question_id" value="{{ question.id }}">
             
             {% if question.question_type == 'multiple_choice' %}

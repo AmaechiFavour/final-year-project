@@ -1,0 +1,43 @@
+PRESENTATION LAYER
+- Template engine: Jinja2 via Flask render_template.
+- Primary frontend framework: Tailwind CSS from CDN in templates/base.html.
+- Secondary frontend framework: Tailwind CSS from CDN in templates/frappe_lms/base.html.
+- Legacy frontend framework: Bootstrap 4 in templates/base1.html.
+- Other frontend libraries: Lucide icons in templates/base.html, Font Awesome in templates/base1.html and templates/frappe_lms/base.html, Slick Carousel in templates/base1.html.
+- Primary presentation templates: templates/index.html, templates/login.html, templates/register.html, templates/profile.html, templates/student_dashboard.html, templates/teacher_dashboard.html, templates/admin_dashboard.html, templates/courses.html, templates/course_detail.html, templates/course_content.html, templates/course_chapters.html, templates/lesson.html, templates/quiz_start.html, templates/quiz_question.html, templates/quiz_results.html, templates/assignment.html, templates/certificates.html, templates/certificate_detail.html, templates/issue_certificates.html, templates/batch_detail.html, templates/create_course.html, templates/edit_course.html, templates/create_lesson.html, templates/edit_lesson.html, templates/create_quiz.html, templates/create_batch.html, templates/manage_batch.html, templates/manage_course.html, templates/course_discussions.html, templates/discussion_detail.html, templates/course_reviews.html, templates/add_course_review.html.
+- Alternate Frappe-style templates: templates/frappe_lms/index.html, templates/frappe_lms/login.html, templates/frappe_lms/register.html, templates/frappe_lms/student_dashboard.html, templates/frappe_lms/instructor_dashboard.html, templates/frappe_lms/admin_dashboard.html, templates/frappe_lms/courses_list.html, templates/frappe_lms/course_detail.html, templates/frappe_lms/course_progress.html, templates/frappe_lms/lesson.html, templates/frappe_lms/quiz.html, templates/frappe_lms/quiz_result.html, templates/frappe_lms/assignment.html, templates/frappe_lms/certificates.html, templates/frappe_lms/certificate_view.html, templates/frappe_lms/batches.html, templates/frappe_lms/batch_detail.html, templates/frappe_lms/profile.html, templates/frappe_lms/course_registration.html, templates/frappe_lms/create_course_instructor.html, templates/frappe_lms/paystack_checkout.html.
+
+APPLICATION LAYER
+- Main backend entry point: main_enhanced.py.
+- Additional backend entry points: main.py and main_frappe.py.
+- Core routing module for the Frappe-compatible variant: routes_frappe_complete.py.
+- Main application framework: Flask.
+- Session/authentication approach: custom Flask session-based authentication using session['user_id'].
+- Route guards in main_enhanced.py: login_required, teacher_required, admin_required.
+- Route guards in main_frappe.py: login_required, role_required.
+- API/auth guards in routes_frappe_complete.py: login_required, instructor_required.
+- Course management logic: main_enhanced.py route handlers browse_courses, view_course, enroll_course, create_course, edit_course, manage_course, create_lesson, edit_lesson, create_chapter, create_batch, manage_batch, add_live_class.
+- Quiz engine logic: main_enhanced.py route handlers view_quiz, take_quiz, quiz_question, save_quiz_answer, submit_quiz, quiz_results, create_quiz, manage_quiz, add_quiz_question.
+- Certificate logic: main_enhanced.py route handlers student_certificates, view_certificate, issue_certificates.
+- Assignment logic: main_enhanced.py route handlers view_assignment, submit_assignment, view_assignment_submissions, grade_submission.
+- Discussion/review logic: main_enhanced.py route handlers course_discussions, create_discussion, discussion_detail, reply_discussion, course_reviews, add_course_review.
+- Administrative logic: main_enhanced.py route handlers admin_dashboard, manage_users, edit_user, delete_user, manage_courses, delete_course.
+- Legacy mail-enabled controller: main.py uses Flask-Mail.
+
+DATA ACCESS LAYER
+- ORM: Flask-SQLAlchemy.
+- Primary schema file: models.py.
+- Alternate schema file: models_frappe_complete.py for the Frappe-compatible implementation.
+- Model classes in models.py: User, Course, Enrollment, Lesson, Lesson_Resource, Lesson_Progress, Quiz, Quiz_Question, Quiz_Option, Quiz_Attempt, Quiz_Answer, Assignment, Assignment_Submission, Announcement, Chapter, Batch, BatchEnrollment, Certificate, Discussion, DiscussionReply, CourseReview, LiveClass, Enrolled.
+
+STORAGE & PERSISTENCE LAYER
+- Primary database system: SQLite.
+- Main database filename: elearning.db in main_enhanced.py.
+- Alternate database filenames: learn.db in main.py and frappe_lms.db in main_frappe.py.
+- Migration reference path: instance/elearning.db in migrate_data.py.
+- Upload root directory: uploads.
+- Profile picture storage path: uploads/profiles.
+- Assignment submission file storage: uploads with filenames like assignment_<assignment_id>_<user_id>_<original_filename>.
+- Lesson video storage: uploads with filenames like lesson_<course_id>_<original_filename>.
+- Upload serving route: /uploads/<path:filename> in main_enhanced.py.
+- Frappe-compatible upload root: uploads in main_frappe.py.

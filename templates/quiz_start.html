@@ -30,7 +30,7 @@
             <p class="text-sm text-yellow-800">⚠️ Once you start, you will have {{ quiz.time_limit or 'unlimited' }} minutes to complete this quiz. Make sure you're ready!</p>
         </div>
 
-        <form method="POST" action="{{ url_for('start_quiz', quiz_id=quiz.id) }}" class="flex gap-4">
+        <form method="POST" action="{{ url_for('take_quiz', quiz_id=quiz.id) }}" class="flex gap-4">
             <button type="submit" class="bg-green-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-700">Start Quiz</button>
             <a href="javascript:history.back()" class="bg-gray-200 text-gray-900 px-8 py-3 rounded-lg font-semibold hover:bg-gray-300">Cancel</a>
         </form>

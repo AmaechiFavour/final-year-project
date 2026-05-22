@@ -63,7 +63,7 @@ def admin_required(f):
         user = User.query.get(session['user_id'])
         if user.account != 'admin':
             flash('You must be an admin to access this resource', 'danger')
-            return redirect(url_for('home'))
+            return redirect(url_for('index'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -79,6 +79,31 @@ def get_user_progress_for_course(student_id, course_id):
     ).join(Lesson).filter(Lesson.course_id == course_id).count()
     
     return (completed / total_lessons) * 100
+
+
+def get_current_user():
+    """Return the currently authenticated user from session, if available."""
+    user_id = session.get('user_id')
+    if not user_id:
+        return None
+
+    user = User.query.get(user_id)
+    if user is None:
+        # Session may point to a deleted user; clear stale login state.
+        session.clear()
+        return None
+
+    return user
+
+
+@app.context_processor
+def inject_auth_context():
+    """Make auth state available in every template."""
+    user = get_current_user()
+    return {
+        'logged_in': user is not None,
+        'user': user,
+    }
 
 # ==================== AUTHENTICATION ROUTES ====================
 @app.route('/')
@@ -344,6 +369,8 @@ def student_dashboard():
     # Get recommended courses (not enrolled)
     all_courses = Course.query.filter_by(is_published=True, is_archived=False).all()
     recommended_courses = [c for c in all_courses if c.id not in [e.course_id for e in enrollments]]
+
+    certificates_earned = Certificate.query.filter_by(student_id=user_id).count()
     
     return render_template('student_dashboard.html', 
                          user=user, 
@@ -353,7 +380,8 @@ def student_dashboard():
                          enrolled_count=len(enrolled_courses),
                          completed_count=completed_count,
                          in_progress_count=in_progress_count,
-                         streak=0)
+                         streak=0,
+                         certificates_earned=certificates_earned)
 
 @app.route('/student/browse-courses')
 @login_required
@@ -779,9 +807,11 @@ def teacher_dashboard():
     """Teacher main dashboard"""
     user_id = session['user_id']
     user = User.query.get(user_id)
+    from sqlalchemy import func as sa_func
     
     # Get instructor's courses
     courses = Course.query.filter_by(instructor_id=user_id).all()
+    course_ids = [c.id for c in courses]
     
     # Calculate statistics
     total_students = sum(len(c.enrollments) for c in courses)
@@ -798,6 +828,99 @@ def teacher_dashboard():
         avg_completion = int(total_progress / (total_enrollments * len([c for c in courses if len(c.lessons) > 0]))) if any(c.lessons for c in courses) else 0
     else:
         avg_completion = 0
+
+    if course_ids:
+        avg_rating_val = db.session.query(sa_func.avg(CourseReview.rating)).\
+            filter(CourseReview.course_id.in_(course_ids)).scalar()
+        avg_rating = round(avg_rating_val or 0, 1)
+        total_reviews = CourseReview.query.filter(CourseReview.course_id.in_(course_ids)).count()
+        total_quizzes = Quiz.query.filter(Quiz.course_id.in_(course_ids)).count()
+        total_lessons = Lesson.query.filter(Lesson.course_id.in_(course_ids)).count()
+
+        pending_submissions = db.session.query(Assignment_Submission)\
+            .join(Assignment).filter(
+                Assignment.course_id.in_(course_ids),
+                Assignment_Submission.is_submitted == True,
+                Assignment_Submission.is_graded == False
+            ).order_by(Assignment_Submission.submitted_at.desc()).all()
+
+        pending_subs_data = []
+        for sub in pending_submissions[:10]:
+            student = User.query.get(sub.student_id)
+            assignment = Assignment.query.get(sub.assignment_id)
+            course = Course.query.get(assignment.course_id) if assignment else None
+            pending_subs_data.append({
+                'id': sub.id,
+                'student_name': f"{student.first_name} {student.last_name}" if student else "Unknown",
+                'assignment_title': assignment.title if assignment else "Unknown",
+                'course_title': course.title if course else "Unknown",
+                'submitted_at': sub.submitted_at.strftime('%b %d, %Y') if sub.submitted_at else 'N/A',
+                'assignment_id': sub.assignment_id
+            })
+
+        recent_activity = []
+
+        recent_enrollments = db.session.query(Enrollment, User, Course)\
+            .join(User, Enrollment.student_id == User.id)\
+            .join(Course, Enrollment.course_id == Course.id)\
+            .filter(Course.instructor_id == user_id)\
+            .order_by(Enrollment.enrolled_at.desc()).limit(5).all()
+        for enr, student, course in recent_enrollments:
+            recent_activity.append({
+                'icon': '👤',
+                'title': f'{student.first_name} {student.last_name} enrolled in {course.title}',
+                'date': enr.enrolled_at.strftime('%b %d, %Y') if enr.enrolled_at else 'N/A',
+                'timestamp': enr.enrolled_at or datetime.utcnow(),
+                'type': 'enrollment'
+            })
+
+        recent_quiz_attempts = db.session.query(Quiz_Attempt, User, Quiz)\
+            .join(User, Quiz_Attempt.student_id == User.id)\
+            .join(Quiz, Quiz_Attempt.quiz_id == Quiz.id)\
+            .filter(Quiz.course_id.in_(course_ids))\
+            .order_by(Quiz_Attempt.started_at.desc()).limit(5).all()
+        for attempt, student, quiz in recent_quiz_attempts:
+            score_str = f" - {attempt.percentage:.0f}%" if attempt.percentage is not None else ""
+            recent_activity.append({
+                'icon': '📝',
+                'title': f'{student.first_name} took quiz: {quiz.title}{score_str}',
+                'date': attempt.started_at.strftime('%b %d, %Y') if attempt.started_at else 'N/A',
+                'timestamp': attempt.started_at or datetime.utcnow(),
+                'type': 'quiz'
+            })
+
+        recent_reviews = db.session.query(CourseReview, User, Course)\
+            .join(User, CourseReview.student_id == User.id)\
+            .join(Course, CourseReview.course_id == Course.id)\
+            .filter(Course.instructor_id == user_id)\
+            .order_by(CourseReview.created_at.desc()).limit(3).all()
+        for review, student, course in recent_reviews:
+            stars = '⭐' * review.rating
+            recent_activity.append({
+                'icon': '⭐',
+                'title': f'{student.first_name} rated {course.title}: {stars}',
+                'date': review.created_at.strftime('%b %d, %Y') if review.created_at else 'N/A',
+                'timestamp': review.created_at or datetime.utcnow(),
+                'type': 'review'
+            })
+
+        recent_activity.sort(key=lambda x: x['timestamp'], reverse=True)
+        recent_activity = recent_activity[:10]
+
+        for course in courses:
+            course.student_count = len(course.enrollments)
+            course.lesson_count = len(course.lessons)
+            course.quiz_count = len(course.quizzes)
+            course_reviews = CourseReview.query.filter_by(course_id=course.id).all()
+            course.avg_rating = round(sum(r.rating for r in course_reviews) / len(course_reviews), 1) if course_reviews else 0
+            course.review_count = len(course_reviews)
+    else:
+        avg_rating = 0
+        total_reviews = 0
+        total_quizzes = 0
+        total_lessons = 0
+        pending_subs_data = []
+        recent_activity = []
     
     return render_template('teacher_dashboard.html',
                          user=user,
@@ -805,7 +928,14 @@ def teacher_dashboard():
                          courses_count=len(courses),
                          total_students=total_students,
                          total_enrollments=total_enrollments,
-                         avg_completion=avg_completion)
+                         avg_completion=avg_completion,
+                         avg_rating=avg_rating,
+                         total_reviews=total_reviews,
+                         total_quizzes=total_quizzes,
+                         total_lessons=total_lessons,
+                         pending_submissions=pending_subs_data,
+                         pending_count=len(pending_subs_data),
+                         recent_activity=recent_activity)
 
 @app.route('/teacher/course/create', methods=['GET', 'POST'])
 @teacher_required
@@ -1159,6 +1289,36 @@ def view_course_students(course_id):
                          course=course,
                          enrollments=enrollments,
                          student_progress=student_progress)
+
+
+@app.route('/broadcast', methods=['POST'])
+@login_required
+def broadcast_message():
+    """Teacher broadcasts a message to students in all of their courses."""
+    user = get_current_user()
+    if not user or user.account != 'teacher':
+        flash('Access denied.', 'error')
+        return redirect(url_for('dashboard'))
+
+    title = request.form.get('title', '').strip()
+    content = request.form.get('content', '').strip()
+
+    if title and content:
+        courses = Course.query.filter_by(instructor_id=user.id).all()
+        for course in courses:
+            announcement = Announcement(
+                course_id=course.id,
+                title=title,
+                content=content,
+                created_by_id=user.id
+            )
+            db.session.add(announcement)
+        db.session.commit()
+        flash('Broadcast sent to all your students!', 'success')
+    else:
+        flash('Title and content are required.', 'error')
+
+    return redirect(url_for('teacher_dashboard'))
 
 # ==================== ADMIN ROUTES ====================
 @app.route('/admin/dashboard')

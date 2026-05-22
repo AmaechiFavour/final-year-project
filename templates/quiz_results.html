@@ -36,7 +36,7 @@
 
         <div class="flex gap-4 justify-center pt-6">
             {% if attempt.score < attempt.quiz.passing_percentage %}
-            <a href="{{ url_for('start_quiz', quiz_id=attempt.quiz.id) }}" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700">Try Again</a>
+            <a href="{{ url_for('view_quiz', quiz_id=attempt.quiz.id) }}" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700">Try Again</a>
             {% else %}
             <a href="{{ url_for('view_course', course_id=attempt.quiz.course_id) }}" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700">Continue Learning</a>
             {% endif %}
